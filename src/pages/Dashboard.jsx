@@ -241,7 +241,7 @@ const Dashboard = () => {
               className="text-[10px] font-bold"
               style={{ color: activeTab === 'home' ? '#F05A28' : '#94a3b8' }}
             >
-              Explore
+              홈
             </span>
             {activeTab === 'home' && (
               <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
@@ -255,22 +255,19 @@ const Dashboard = () => {
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path
-                d="M5 5h14a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"
-                stroke={activeTab === 'save' ? '#F05A28' : '#94a3b8'}
-                strokeWidth="1.5"
-              />
-              <path
-                d="M8 21h8M12 16v5"
+                d="M5 3h14a1 1 0 011 1v17l-7-4-7 4V4a1 1 0 011-1z"
+                fill={activeTab === 'save' ? '#F05A28' : 'transparent'}
                 stroke={activeTab === 'save' ? '#F05A28' : '#94a3b8'}
                 strokeWidth="1.5"
                 strokeLinecap="round"
+                strokeLinejoin="round"
               />
             </svg>
             <span
               className="text-[10px] font-bold"
               style={{ color: activeTab === 'save' ? '#F05A28' : '#94a3b8' }}
             >
-              Taste
+              저장
             </span>
             {activeTab === 'save' && (
               <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
@@ -282,17 +279,33 @@ const Dashboard = () => {
             onClick={() => setActiveTab('mydining')}
             className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
           >
-            <MapPin
-              size={24}
-              color={activeTab === 'mydining' ? '#F05A28' : '#94a3b8'}
-            />
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M11 2v7a4 4 0 01-4 4v9"
+                stroke={activeTab === 'mydining' ? '#F05A28' : '#94a3b8'}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M7 2v4M9 2v4"
+                stroke={activeTab === 'mydining' ? '#F05A28' : '#94a3b8'}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M15 2c0 0 2 2 2 6s-2 6-2 6v8"
+                stroke={activeTab === 'mydining' ? '#F05A28' : '#94a3b8'}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
             <span
               className="text-[10px] font-bold"
               style={{
                 color: activeTab === 'mydining' ? '#F05A28' : '#94a3b8',
               }}
             >
-              Map
+              마이다이닝
             </span>
             {activeTab === 'mydining' && (
               <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
@@ -304,15 +317,42 @@ const Dashboard = () => {
             onClick={() => setActiveTab('friends')}
             className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
           >
-            <User
-              size={24}
-              color={activeTab === 'friends' ? '#F05A28' : '#94a3b8'}
-            />
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle
+                cx="9"
+                cy="7"
+                r="3"
+                fill={activeTab === 'friends' ? '#F05A28' : 'transparent'}
+                stroke={activeTab === 'friends' ? '#F05A28' : '#94a3b8'}
+                strokeWidth="1.5"
+              />
+              <path
+                d="M2 20c0-3.314 3.134-6 7-6s7 2.686 7 6"
+                stroke={activeTab === 'friends' ? '#F05A28' : '#94a3b8'}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              <circle
+                cx="17"
+                cy="7"
+                r="2.5"
+                fill={activeTab === 'friends' ? '#F05A28' : 'transparent'}
+                fillOpacity={activeTab === 'friends' ? 0.5 : 1}
+                stroke={activeTab === 'friends' ? '#F05A28' : '#94a3b8'}
+                strokeWidth="1.5"
+              />
+              <path
+                d="M19 14c1.5 0 4 .8 4 3"
+                stroke={activeTab === 'friends' ? '#F05A28' : '#94a3b8'}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
             <span
               className="text-[10px] font-bold"
               style={{ color: activeTab === 'friends' ? '#F05A28' : '#94a3b8' }}
             >
-              Profile
+              친구
             </span>
             {activeTab === 'friends' && (
               <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
