@@ -1,12 +1,14 @@
-// TasteQuest: Premium Main Dashboard (재원 & 태환 통합본)
+// TasteQuest: Premium Main Dashboard (재원 & 태환 완벽 통합본 - 푸터 복구)
 import React, { useState, useReducer, Suspense } from 'react';
-import { Home, User, MapPin, Edit2, ChevronUp } from 'lucide-react';
+import { Home, User, Edit2, ChevronUp, LogOut } from 'lucide-react';
 
-// 컴포넌트 Import (파일명 대소문자 주의: KakaoMap)
+// 컴포넌트 Import
 import KakaoMap from '../components/KakaoMap';
 import AiChatBot from '../components/AiChatBot';
 
-// 프로필 상태 관리를 위한 리듀서
+// 로그인 정보 가져오기 (폴더명 s 확인!)
+import { useAuth } from '../contexts/AuthContext';
+
 const tasteReducer = (state, action) => {
   switch (action.type) {
     case 'UPDATE_PROFILE':
@@ -17,17 +19,12 @@ const tasteReducer = (state, action) => {
 };
 
 const Dashboard = () => {
-  // 태환님 하단바 활성화 탭 상태 이식
+  const { user, loginWithGoogle, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
 
   const [userProfile] = useReducer(tasteReducer, {
     nickname: '미식탐험가',
     level: 'Expert',
-    spicy: 3,
-    sweet: 4,
-    savory: 5,
-    sour: 2,
-    crunchy: 4,
   });
 
   const [restaurants] = useState([
@@ -66,13 +63,32 @@ const Dashboard = () => {
         <h1 className="text-2xl font-black tracking-tighter text-slate-900">
           GIMIBOK
         </h1>
-        <div className="flex gap-2">
-          <button className="px-3 py-1.5 text-sm font-semibold text-slate-600">
-            회원가입
-          </button>
-          <button className="bg-[#F05A28] text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow-lg shadow-orange-200 active:scale-95 transition-all">
-            로그인
-          </button>
+        <div className="flex gap-2 items-center">
+          {user ? (
+            <div className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">
+              <img
+                src={user.photoURL}
+                alt="profile"
+                className="w-6 h-6 rounded-full"
+              />
+              <span className="text-xs font-bold text-slate-700">
+                {user.displayName}님
+              </span>
+              <button
+                onClick={logout}
+                className="p-1 hover:text-red-500 transition-colors"
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={loginWithGoogle}
+              className="bg-[#F05A28] text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow-lg shadow-orange-200"
+            >
+              로그인
+            </button>
+          )}
         </div>
       </nav>
 
@@ -83,27 +99,30 @@ const Dashboard = () => {
             <div className="flex flex-col items-center gap-3">
               <div className="relative group">
                 <img
-                  src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200"
+                  src={
+                    user
+                      ? user.photoURL
+                      : 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200'
+                  }
                   alt="Profile"
                   className="w-24 h-24 rounded-full object-cover border-4 border-orange-50"
                 />
-                <button className="absolute bottom-0 right-0 p-1.5 bg-white shadow-md rounded-full text-slate-400 hover:text-[#F05A28] transition-colors border border-gray-100">
+                <button className="absolute bottom-0 right-0 p-1.5 bg-white shadow-md rounded-full text-slate-400 border border-gray-100">
                   <Edit2 size={14} />
                 </button>
               </div>
               <div className="text-center">
                 <span className="text-[10px] font-bold text-[#F05A28] uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded-full">
-                  Expert
+                  {user ? 'Expert' : 'Guest'}
                 </span>
                 <h2 className="text-xl font-bold mt-1">
-                  {userProfile.nickname}
+                  {user ? user.displayName : userProfile.nickname}
                 </h2>
               </div>
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-[#F05A28] rounded-full"></span>
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                   Taste Profile
                 </h3>
                 <span className="text-[10px] font-medium text-[#F05A28] bg-orange-50 px-2 py-0.5 rounded-md">
@@ -111,28 +130,21 @@ const Dashboard = () => {
                 </span>
               </div>
               <div className="aspect-square w-full bg-slate-50 rounded-2xl flex items-center justify-center border border-dashed border-slate-200">
-                <div className="relative w-3/4 h-3/4 border border-slate-200 rounded-full flex items-center justify-center">
-                  <span className="text-[10px] text-slate-300 font-medium">
-                    Radar Chart View
-                  </span>
-                </div>
+                <span className="text-[10px] text-slate-300 font-medium">
+                  Radar Chart View
+                </span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 3. 지도 섹션 (재원님 KakaoMap 연동) */}
+        {/* 3. 지도 섹션 */}
         <section className="space-y-3">
-          <div className="flex items-center justify-between px-1">
-            <h3 className="text-lg font-bold">주변 맛집 지도</h3>
-            <span className="text-xs font-bold text-slate-500 bg-gray-100 px-3 py-1 rounded-full">
-              반경 2KM
-            </span>
-          </div>
+          <h3 className="text-lg font-bold px-1">주변 맛집 지도</h3>
           <div className="w-full h-80 rounded-3xl overflow-hidden shadow-sm border border-gray-100 relative">
             <Suspense
               fallback={
-                <div className="w-full h-full bg-gray-100 animate-pulse flex items-center justify-center">
+                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                   지도를 불러오는 중...
                 </div>
               }
@@ -142,21 +154,16 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* 4. 추천 리스트 섹션 */}
+        {/* 4. 추천 리스트 */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <h3 className="text-lg font-bold">Recommended Nearby</h3>
-            <button className="text-xs font-bold text-[#F05A28] flex items-center gap-1">
-              전체보기 <span className="text-[10px]">▶</span>
-            </button>
-          </div>
+          <h3 className="text-lg font-bold px-1">Recommended Nearby</h3>
           <div className="space-y-6">
             {restaurants.map((res) => (
-              <div key={res.id} className="group relative text-left">
+              <div key={res.id} className="group relative">
                 <div className="aspect-[16/9] w-full rounded-2xl overflow-hidden shadow-md">
                   <img
                     src={res.img}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform group-hover:scale-110"
                     alt={res.name}
                   />
                   <div className="absolute top-3 left-3 bg-[#F05A28] text-white px-3 py-1 rounded-lg text-xs font-bold shadow-lg">
@@ -165,9 +172,7 @@ const Dashboard = () => {
                 </div>
                 <div className="mt-3 flex justify-between items-start">
                   <div>
-                    <h4 className="text-lg font-bold group-hover:text-[#F05A28] transition-colors text-left">
-                      {res.name}
-                    </h4>
+                    <h4 className="text-lg font-bold text-left">{res.name}</h4>
                     <div className="flex gap-2 mt-1">
                       {res.tags.map((tag) => (
                         <span
@@ -179,7 +184,7 @@ const Dashboard = () => {
                       ))}
                     </div>
                   </div>
-                  <button className="p-2 text-slate-300 hover:text-orange-500 transition-colors">
+                  <button className="p-2 text-slate-300">
                     <User size={20} />
                   </button>
                 </div>
@@ -188,8 +193,8 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* 푸터 */}
-        <footer className="mt-6 px-2 pb-6 text-[11px] text-slate-400 space-y-2 leading-relaxed border-t border-gray-100 pt-6">
+        {/* [복구 완료] 푸터 영역 */}
+        <footer className="mt-6 px-2 pb-12 text-[11px] text-slate-400 space-y-2 leading-relaxed border-t border-gray-100 pt-6 text-left">
           <div className="space-y-1">
             <p>
               <span className="font-bold text-slate-500">(주)GIMIBOK</span>
@@ -202,23 +207,21 @@ const Dashboard = () => {
         </footer>
       </main>
 
-      {/* 5. 플로팅 액션 영역 (태환님 AiChatBot 통합) */}
+      {/* 5. 플로팅 액션 영역 */}
       <div className="fixed bottom-24 right-6 flex flex-col gap-3 z-50">
         <button
           onClick={scrollToTop}
-          className="p-3 bg-white shadow-xl rounded-full text-slate-400 hover:text-slate-900 border border-gray-100 active:scale-90 transition-all cursor-pointer"
+          className="p-3 bg-white shadow-xl rounded-full text-slate-400 border border-gray-100 cursor-pointer"
         >
           <ChevronUp size={24} />
         </button>
-
-        {/* 태환님이 만든 실제 챗봇 컴포넌트 */}
         <AiChatBot />
       </div>
 
-      {/* 6. 하단 고정 네비게이션 바 (태환님 디자인 및 로직) */}
+      {/* 6. 하단 고정 네비게이션 바 */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-100 z-40">
         <div className="flex justify-around items-end px-2 pt-1.5 pb-4 max-w-md mx-auto">
-          {/* 홈 */}
+          {/* 홈 버튼 */}
           <button
             onClick={() => setActiveTab('home')}
             className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
@@ -248,7 +251,7 @@ const Dashboard = () => {
             )}
           </button>
 
-          {/* 저장 (Taste) */}
+          {/* 저장 버튼 */}
           <button
             onClick={() => setActiveTab('save')}
             className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
@@ -274,7 +277,7 @@ const Dashboard = () => {
             )}
           </button>
 
-          {/* 마이다이닝 (Map) */}
+          {/* 마이다이닝 버튼 */}
           <button
             onClick={() => setActiveTab('mydining')}
             className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
@@ -312,7 +315,7 @@ const Dashboard = () => {
             )}
           </button>
 
-          {/* 친구 (Profile) */}
+          {/* 친구 버튼 */}
           <button
             onClick={() => setActiveTab('friends')}
             className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
@@ -337,7 +340,6 @@ const Dashboard = () => {
                 cy="7"
                 r="2.5"
                 fill={activeTab === 'friends' ? '#F05A28' : 'transparent'}
-                fillOpacity={activeTab === 'friends' ? 0.5 : 1}
                 stroke={activeTab === 'friends' ? '#F05A28' : '#94a3b8'}
                 strokeWidth="1.5"
               />
