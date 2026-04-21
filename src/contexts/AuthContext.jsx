@@ -13,9 +13,15 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 구글 로그인 함수
+  // AuthContext.jsx 안의 loginWithGoogle 함수
   const loginWithGoogle = () => {
     const provider = new GoogleAuthProvider();
+
+    // 이 한 줄을 추가하면 항상 "어떤 계정으로 로그인할까요?" 창이 뜹니다.
+    provider.setCustomParameters({
+      prompt: 'select_account',
+    });
+
     return signInWithPopup(auth, provider);
   };
 
