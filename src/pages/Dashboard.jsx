@@ -3,31 +3,20 @@
 //   Features: Profile, Taste Radar Chart, Map API Integration, AI Recommendation List
 
 import React, { useState, useReducer, Suspense, lazy } from 'react';
-<<<<<<< HEAD
 import AiChatBot from '../components/AiChatBot'; //추가 부분
-=======
->>>>>>> 4103ee2e3d66886f17ea3dbc592055b338eadee9
 import {
   Home,
   Search,
   User,
   MapPin,
   Edit2,
-<<<<<<< HEAD
-=======
-  MessageCircle,
->>>>>>> 4103ee2e3d66886f17ea3dbc592055b338eadee9
   ChevronUp,
   LogIn,
   UserPlus,
 } from 'lucide-react';
 
 // Lazy load Map component for performance optimization (Code Splitting)
-<<<<<<< HEAD
 // const KakaoMap = lazy(() => import('../components/KakaoMap'));
-=======
-const KakaoMap = lazy(() => import('../components/KakaoMap'));
->>>>>>> 4103ee2e3d66886f17ea3dbc592055b338eadee9
 
 // Reducer for complex state management (Taste Profile)
 const tasteReducer = (state, action) => {
@@ -40,10 +29,7 @@ const tasteReducer = (state, action) => {
 };
 
 const Dashboard = () => {
-<<<<<<< HEAD
   const [activeTab, setActiveTab] = useState('home'); //추가 부분
-=======
->>>>>>> 4103ee2e3d66886f17ea3dbc592055b338eadee9
   const [userProfile, dispatch] = useReducer(tasteReducer, {
     nickname: '미식탐험가',
     level: 'Expert',
@@ -81,11 +67,7 @@ const Dashboard = () => {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
-<<<<<<< HEAD
     <div className="min-h-screen bg-gray-50 font-sans text-slate-900 pb-24">
-=======
-    <div className="min-h-screen bg-gray-50 font-sans text-slate-900 pb-20">
->>>>>>> 4103ee2e3d66886f17ea3dbc592055b338eadee9
       {/* Top Navigation */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 h-16 flex items-center justify-between shadow-sm">
         <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -229,7 +211,6 @@ const Dashboard = () => {
             ))}
           </div>
         </section>
-<<<<<<< HEAD
         {/* 추가 부분 */}
         <footer className="mt-6 px-2 pb-6 text-[11px] text-slate-400 space-y-2 leading-relaxed border-t border-gray-100 pt-6">
           <div className="space-y-1">
@@ -243,15 +224,12 @@ const Dashboard = () => {
             © 2024 GIMIBOK. All rights reserved.
           </p>
         </footer>
-=======
->>>>>>> 4103ee2e3d66886f17ea3dbc592055b338eadee9
       </main>
 
       {/* Floating Actions */}
       <div className="fixed bottom-24 right-6 flex flex-col gap-3 z-50">
         <button
           onClick={scrollToTop}
-<<<<<<< HEAD
           className="p-3 bg-white shadow-xl rounded-full text-slate-400 hover:text-slate-900 border border-gray-100 active:scale-90 transition-all cursor-pointer"
         >
           <ChevronUp size={24} />
@@ -421,35 +399,6 @@ const Dashboard = () => {
             )}
           </button>
         </div>
-=======
-          className="p-3 bg-white shadow-xl rounded-full text-slate-400 hover:text-slate-900 border border-gray-100 active:scale-90 transition-all"
-        >
-          <ChevronUp size={24} />
-        </button>
-        <button className="p-4 bg-[#F05A28] shadow-xl shadow-orange-200 rounded-full text-white active:scale-95 transition-all">
-          <MessageCircle size={28} />
-        </button>
-      </div>
-
-      {/* Bottom Nav Bar (Quick Access) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-gray-100 flex justify-around items-center h-20 px-6 pb-6 z-50">
-        <button className="flex flex-col items-center gap-1 text-slate-400">
-          <Home size={22} />
-          <span className="text-[10px] font-bold">Explore</span>
-        </button>
-        <button className="flex flex-col items-center gap-1 text-[#F05A28] bg-orange-50 px-4 py-2 rounded-2xl">
-          <User size={22} />
-          <span className="text-[10px] font-bold">Taste</span>
-        </button>
-        <button className="flex flex-col items-center gap-1 text-slate-400">
-          <MapPin size={22} />
-          <span className="text-[10px] font-bold">Map</span>
-        </button>
-        <button className="flex flex-col items-center gap-1 text-slate-400">
-          <User size={22} />
-          <span className="text-[10px] font-bold">Profile</span>
-        </button>
->>>>>>> 4103ee2e3d66886f17ea3dbc592055b338eadee9
       </nav>
     </div>
   );
