@@ -1,24 +1,12 @@
-//   TasteQuest: Premium Main Dashboard (GIMIBOK)
-//   React + Tailwind CSS
-//   Features: Profile, Taste Radar Chart, Map API Integration, AI Recommendation List
+// TasteQuest: Premium Main Dashboard (재원 & 태환 통합본)
+import React, { useState, useReducer, Suspense } from 'react';
+import { Home, User, MapPin, Edit2, ChevronUp } from 'lucide-react';
 
-import React, { useState, useReducer, Suspense, lazy } from 'react';
-import AiChatBot from '../components/AiChatBot'; //추가 부분
-import {
-  Home,
-  Search,
-  User,
-  MapPin,
-  Edit2,
-  ChevronUp,
-  LogIn,
-  UserPlus,
-} from 'lucide-react';
+// 컴포넌트 Import (파일명 대소문자 주의: KakaoMap)
+import KakaoMap from '../components/KakaoMap';
+import AiChatBot from '../components/AiChatBot';
 
-// Lazy load Map component for performance optimization (Code Splitting)
-// const KakaoMap = lazy(() => import('../components/KakaoMap'));
-
-// Reducer for complex state management (Taste Profile)
+// 프로필 상태 관리를 위한 리듀서
 const tasteReducer = (state, action) => {
   switch (action.type) {
     case 'UPDATE_PROFILE':
@@ -29,8 +17,10 @@ const tasteReducer = (state, action) => {
 };
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState('home'); //추가 부분
-  const [userProfile, dispatch] = useReducer(tasteReducer, {
+  // 태환님 하단바 활성화 탭 상태 이식
+  const [activeTab, setActiveTab] = useState('home');
+
+  const [userProfile] = useReducer(tasteReducer, {
     nickname: '미식탐험가',
     level: 'Expert',
     spicy: 3,
@@ -68,8 +58,8 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-slate-900 pb-24">
-      {/* Top Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 h-16 flex items-center justify-between shadow-sm">
+      {/* 1. 상단 네비게이션 */}
+      <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 h-16 flex items-center justify-between shadow-sm">
         <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
           <Home size={24} className="text-[#F05A28]" />
         </button>
@@ -77,20 +67,19 @@ const Dashboard = () => {
           GIMIBOK
         </h1>
         <div className="flex gap-2">
-          <button className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900">
+          <button className="px-3 py-1.5 text-sm font-semibold text-slate-600">
             회원가입
           </button>
-          <button className="flex items-center gap-1 bg-[#F05A28] text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow-lg shadow-orange-200 active:scale-95 transition-all">
+          <button className="bg-[#F05A28] text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow-lg shadow-orange-200 active:scale-95 transition-all">
             로그인
           </button>
         </div>
       </nav>
 
       <main className="max-w-md mx-auto p-4 space-y-6">
-        {/* Profile & Taste Section */}
+        {/* 2. 프로필 섹션 */}
         <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-start gap-6">
-            {/* Avatar */}
             <div className="flex flex-col items-center gap-3">
               <div className="relative group">
                 <img
@@ -111,8 +100,6 @@ const Dashboard = () => {
                 </h2>
               </div>
             </div>
-
-            {/* Radar Chart Placeholder (Implementation via Canvas/SVG) */}
             <div className="flex-1">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
@@ -124,7 +111,6 @@ const Dashboard = () => {
                 </span>
               </div>
               <div className="aspect-square w-full bg-slate-50 rounded-2xl flex items-center justify-center border border-dashed border-slate-200">
-                {/* Visual Placeholder for the Radar Chart */}
                 <div className="relative w-3/4 h-3/4 border border-slate-200 rounded-full flex items-center justify-center">
                   <span className="text-[10px] text-slate-300 font-medium">
                     Radar Chart View
@@ -135,15 +121,15 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* Map Section */}
+        {/* 3. 지도 섹션 (재원님 KakaoMap 연동) */}
         <section className="space-y-3">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-lg font-bold">주변 맛집 지도</h3>
             <span className="text-xs font-bold text-slate-500 bg-gray-100 px-3 py-1 rounded-full">
-              반경 1KM
+              반경 2KM
             </span>
           </div>
-          <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 h-64 relative group">
+          <div className="w-full h-80 rounded-3xl overflow-hidden shadow-sm border border-gray-100 relative">
             <Suspense
               fallback={
                 <div className="w-full h-full bg-gray-100 animate-pulse flex items-center justify-center">
@@ -151,22 +137,12 @@ const Dashboard = () => {
                 </div>
               }
             >
-              {/* Mock Map Image for preview, real implementation uses Google/Kakao API */}
-              <img
-                src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=800"
-                className="w-full h-full object-cover grayscale opacity-80"
-                alt="Map"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent"></div>
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg animate-ping"></div>
-                <div className="absolute top-0 left-0 w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div>
-              </div>
+              <KakaoMap />
             </Suspense>
           </div>
         </section>
 
-        {/* Recommended List */}
+        {/* 4. 추천 리스트 섹션 */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-lg font-bold">Recommended Nearby</h3>
@@ -176,7 +152,7 @@ const Dashboard = () => {
           </div>
           <div className="space-y-6">
             {restaurants.map((res) => (
-              <div key={res.id} className="group relative">
+              <div key={res.id} className="group relative text-left">
                 <div className="aspect-[16/9] w-full rounded-2xl overflow-hidden shadow-md">
                   <img
                     src={res.img}
@@ -189,7 +165,7 @@ const Dashboard = () => {
                 </div>
                 <div className="mt-3 flex justify-between items-start">
                   <div>
-                    <h4 className="text-lg font-bold group-hover:text-[#F05A28] transition-colors">
+                    <h4 className="text-lg font-bold group-hover:text-[#F05A28] transition-colors text-left">
                       {res.name}
                     </h4>
                     <div className="flex gap-2 mt-1">
@@ -211,22 +187,22 @@ const Dashboard = () => {
             ))}
           </div>
         </section>
-        {/* 추가 부분 */}
+
+        {/* 푸터 */}
         <footer className="mt-6 px-2 pb-6 text-[11px] text-slate-400 space-y-2 leading-relaxed border-t border-gray-100 pt-6">
           <div className="space-y-1">
             <p>
               <span className="font-bold text-slate-500">(주)GIMIBOK</span>
             </p>
-            <p>대표 : 김기복</p>
+            <p>대표 : 김기복 | 팀장 : 이재원</p>
           </div>
-
           <p className="text-[10px] text-slate-300 pt-1">
-            © 2024 GIMIBOK. All rights reserved.
+            © 2026 GIMIBOK. All rights reserved.
           </p>
         </footer>
       </main>
 
-      {/* Floating Actions */}
+      {/* 5. 플로팅 액션 영역 (태환님 AiChatBot 통합) */}
       <div className="fixed bottom-24 right-6 flex flex-col gap-3 z-50">
         <button
           onClick={scrollToTop}
@@ -235,12 +211,12 @@ const Dashboard = () => {
           <ChevronUp size={24} />
         </button>
 
+        {/* 태환님이 만든 실제 챗봇 컴포넌트 */}
         <AiChatBot />
       </div>
 
-      {/* // 추가 부분 */}
-      {/* Bottom Nav Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-100 z-50">
+      {/* 6. 하단 고정 네비게이션 바 (태환님 디자인 및 로직) */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-100 z-40">
         <div className="flex justify-around items-end px-2 pt-1.5 pb-4 max-w-md mx-auto">
           {/* 홈 */}
           <button
@@ -265,14 +241,14 @@ const Dashboard = () => {
               className="text-[10px] font-bold"
               style={{ color: activeTab === 'home' ? '#F05A28' : '#94a3b8' }}
             >
-              홈
+              Explore
             </span>
             {activeTab === 'home' && (
               <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
             )}
           </button>
 
-          {/* 저장 */}
+          {/* 저장 (Taste) */}
           <button
             onClick={() => setActiveTab('save')}
             className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
@@ -289,110 +265,54 @@ const Dashboard = () => {
                 strokeWidth="1.5"
                 strokeLinecap="round"
               />
-              <path
-                d="M8 9h8M8 12h5"
-                stroke={activeTab === 'save' ? '#F05A28' : '#94a3b8'}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
             </svg>
             <span
               className="text-[10px] font-bold"
               style={{ color: activeTab === 'save' ? '#F05A28' : '#94a3b8' }}
             >
-              저장
+              Taste
             </span>
             {activeTab === 'save' && (
               <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
             )}
           </button>
 
-          {/* 마이다이닝 */}
+          {/* 마이다이닝 (Map) */}
           <button
             onClick={() => setActiveTab('mydining')}
             className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <circle
-                cx="12"
-                cy="8"
-                r="3.5"
-                fill={activeTab === 'mydining' ? '#F05A28' : 'transparent'}
-                stroke={activeTab === 'mydining' ? '#F05A28' : '#94a3b8'}
-                strokeWidth="1.5"
-              />
-              <path
-                d="M5 20c0-3.866 3.134-7 7-7s7 3.134 7 7"
-                stroke={activeTab === 'mydining' ? '#F05A28' : '#94a3b8'}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M17 9l1.5 1.5L21 8"
-                stroke={activeTab === 'mydining' ? '#F05A28' : '#94a3b8'}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <MapPin
+              size={24}
+              color={activeTab === 'mydining' ? '#F05A28' : '#94a3b8'}
+            />
             <span
               className="text-[10px] font-bold"
               style={{
                 color: activeTab === 'mydining' ? '#F05A28' : '#94a3b8',
               }}
             >
-              마이다이닝
+              Map
             </span>
             {activeTab === 'mydining' && (
               <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
             )}
           </button>
 
-          {/* 친구 */}
+          {/* 친구 (Profile) */}
           <button
             onClick={() => setActiveTab('friends')}
             className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
           >
-            <div className="relative">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <circle
-                  cx="9"
-                  cy="8"
-                  r="3"
-                  fill={activeTab === 'friends' ? '#F05A28' : 'transparent'}
-                  stroke={activeTab === 'friends' ? '#F05A28' : '#94a3b8'}
-                  strokeWidth="1.5"
-                />
-                <circle
-                  cx="16.5"
-                  cy="8"
-                  r="2.5"
-                  fill={activeTab === 'friends' ? '#F05A28' : 'transparent'}
-                  fillOpacity={activeTab === 'friends' ? 0.5 : 1}
-                  stroke={activeTab === 'friends' ? '#F05A28' : '#94a3b8'}
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M2 20c0-3.314 3.134-6 7-6s7 2.686 7 6"
-                  stroke={activeTab === 'friends' ? '#F05A28' : '#94a3b8'}
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M18 14c1.5 0 4 .8 4 3"
-                  stroke={activeTab === 'friends' ? '#F05A28' : '#94a3b8'}
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-              {/* 알림 배지 */}
-              <span className="absolute -top-0.5 -right-0.5 w-[7px] h-[7px] bg-[#F05A28] rounded-full border-[1.5px] border-white" />
-            </div>
+            <User
+              size={24}
+              color={activeTab === 'friends' ? '#F05A28' : '#94a3b8'}
+            />
             <span
               className="text-[10px] font-bold"
               style={{ color: activeTab === 'friends' ? '#F05A28' : '#94a3b8' }}
             >
-              친구
+              Profile
             </span>
             {activeTab === 'friends' && (
               <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
