@@ -2,7 +2,6 @@ import React, { useState, useReducer, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronUp } from 'lucide-react';
 
-// 분리한 컴포넌트들 Import
 import Header from '../components/Dashboard/Header';
 import ProfileCard from '../components/Dashboard/ProfileCard';
 import RestaurantList from '../components/Dashboard/RestaurantList';
@@ -10,7 +9,6 @@ import NavigationBar from '../components/Dashboard/NavigationBar';
 import KakaoMap from '../components/KakaoMap';
 import AiChatBot from '../components/AiChatBot';
 
-// Context & Chart Setting
 import { useAuth } from '../contexts/AuthContext';
 import { useYum } from '../contexts/YumContext';
 import {
@@ -22,6 +20,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+
 ChartJS.register(
   RadialLinearScale,
   PointElement,
@@ -97,7 +96,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-slate-900 pb-24">
+    <div className="min-h-screen bg-gray-50 font-sans text-slate-900 pb-24 text-left">
       <Header
         user={user}
         loginWithGoogle={loginWithGoogle}
@@ -129,13 +128,11 @@ const Dashboard = () => {
           }}
         />
 
-        <section className="space-y-3 text-left">
+        <section className="space-y-3">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-lg font-bold">주변 맛집 지도</h3>
-            <span className="text-xs font-bold text-slate-500 bg-gray-100 px-3 py-1 rounded-full">
-              반경 2KM
-            </span>
           </div>
+
           <div className="w-full h-80 rounded-3xl overflow-hidden shadow-sm border border-gray-100 relative">
             <Suspense
               fallback={
@@ -156,7 +153,7 @@ const Dashboard = () => {
           navigate={navigate}
         />
 
-        <footer className="mt-6 px-2 pb-12 text-[11px] text-slate-400 space-y-2 border-t border-gray-100 pt-6 text-left">
+        <footer className="mt-6 px-2 pb-12 text-[11px] text-slate-400 space-y-2 border-t border-gray-100 pt-6">
           <div className="space-y-1">
             <p>
               <span className="font-bold text-slate-500">(주)GIMIBOK</span>
