@@ -1,5 +1,6 @@
-// TasteQuest: Premium Main Dashboard (재원 & 영재 & 태환 최종 통합본)
+// TasteQuest: Premium Main Dashboard (재원&영재&태환 기능 총집합 버전)
 import React, { useState, useReducer, Suspense } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Home,
   User,
@@ -10,17 +11,14 @@ import {
   Heart,
 } from 'lucide-react';
 
-// 컴포넌트 Import
+// 컴포넌트 & 컨텍스트 Import
 import KakaoMap from '../components/KakaoMap';
 import AiChatBot from '../components/AiChatBot';
-
-// 영재님 상단 로고 이미지
+import { useAuth } from '../contexts/AuthContext';
+import { useYum } from '../contexts/YumContext'; // ✅ 태환: 즐겨찾기 연동
 import GimibokLogo from '../assets/gimibok-logo.svg.webp';
 
-// 로그인 정보 가져오기
-import { useAuth } from '../contexts/AuthContext';
-
-// ★ 영재: 차트 관련 Import 및 설정
+// 영재: 차트 설정
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -52,21 +50,24 @@ const tasteReducer = (state, action) => {
 
 const Dashboard = () => {
   const { user, loginWithGoogle, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('home');
+  const navigate = useNavigate(); // ✅ 태환: 페이지 이동
+  const { addFavorite, favorites } = useYum(); // ✅ 태환: 찜 기능
+  const isFavorite = (id) => favorites.some((f) => f.id === id); // ✅ 태환: 찜 여부 확인
 
-  // ★ 영재: 6가지 항목으로 구성된 유저 프로필 상태
+  const [activeTab, setActiveTab] = useState('home');
+  const [mapKeyword, setMapKeyword] = useState(''); // ✅ 태환: 챗봇-지도 연동용
+
   const [userProfile] = useReducer(tasteReducer, {
     nickname: '미식탐험가',
     level: 'Expert',
-    lessSpicy: 4, // 덜맵기
-    moreSpicy: 2, // 매움
-    lessSalty: 3, // 덜짜게
-    moreSalty: 1, // 짜게
-    softness: 5, // 부드러움
-    crunchyTexture: 4, // 식감
+    lessSpicy: 4,
+    moreSpicy: 2,
+    lessSalty: 3,
+    moreSalty: 1,
+    softness: 5,
+    crunchyTexture: 4,
   });
 
-  // ★ 영재: 차트 데이터 및 옵션 설정
   const chartData = {
     labels: ['덜맵기', '매움', '덜짜게', '짜게', '부드러움', '식감'],
     datasets: [
@@ -96,10 +97,7 @@ const Dashboard = () => {
         suggestedMin: 1,
         suggestedMax: 5,
         ticks: { stepSize: 1, display: false },
-        pointLabels: {
-          font: { size: 11, weight: 'bold' },
-          color: '#F05A28',
-        },
+        pointLabels: { font: { size: 10, weight: 'bold' }, color: '#F05A28' },
       },
     },
     plugins: { legend: { display: false } },
@@ -135,23 +133,25 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-slate-900 pb-24">
-      {/* 1. 상단 네비게이션 (영재: 중앙 로고 정렬 / 재원: 회원가입 제거) */}
+      {/* 1. 상단 네비게이션 */}
       <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 h-16 shadow-sm">
         <div className="max-w-md mx-auto h-full px-4 flex items-center relative">
           <div className="absolute left-4">
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <button
+              onClick={() => window.location.reload()}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center cursor-pointer"
+            >
               <Home size={22} className="text-[#F05A28]" />
             </button>
           </div>
-
           <div className="flex-1 flex justify-center">
             <img
               src={GimibokLogo}
               alt="GIMIBOK 로고"
-              className="h-14 w-auto object-contain"
+              className="h-14 w-auto object-contain cursor-pointer"
+              onClick={() => navigate('/')}
             />
           </div>
-
           <div className="absolute right-4 flex items-center">
             {user ? (
               <div className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">
@@ -182,8 +182,8 @@ const Dashboard = () => {
         </div>
       </nav>
 
-      <main className="max-w-md mx-auto p-4 space-y-6">
-        {/* 2. 프로필 섹션 (영재: 레이더 차트 적용) */}
+      <main className="max-w-md mx-auto p-4 space-y-6 text-left">
+        {/* 2. 프로필 섹션 */}
         <section className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-start gap-6">
             <div className="flex flex-col items-center gap-3">
@@ -199,7 +199,7 @@ const Dashboard = () => {
                     <User size={48} />
                   </div>
                 )}
-                <button className="absolute bottom-0 right-0 p-1.5 bg-white shadow-md rounded-full text-slate-400 border border-gray-100 hover:text-[#F05A28] transition-colors cursor-pointer">
+                <button className="absolute bottom-0 right-0 p-1.5 bg-white shadow-md rounded-full text-slate-400 border border-gray-100 hover:text-[#F05A28] cursor-pointer">
                   <Edit2 size={14} />
                 </button>
               </div>
@@ -212,20 +212,17 @@ const Dashboard = () => {
                 </h2>
               </div>
             </div>
-
             <div className="flex-1 relative">
               <div className="flex items-center mb-2">
-                <h3 className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-[#F05A28] rounded-full"></span>
                   Taste Profile
                 </h3>
               </div>
-              <span className="absolute top-0 right-0 text-[9px] sm:text-[10px] font-medium text-[#F05A28] bg-orange-50 px-2 py-0.5 rounded-md">
+              <span className="absolute top-0 right-0 text-[9px] font-medium text-[#F05A28] bg-orange-50 px-2 py-0.5 rounded-md">
                 AI Analyzed
               </span>
-
-              {/* 육각형 차트 영역 */}
-              <div className="w-full aspect-square flex items-center justify-center overflow-hidden pt-4">
+              <div className="w-full aspect-square flex items-center justify-center pt-4">
                 <Radar data={chartData} options={chartOptions} />
               </div>
             </div>
@@ -233,7 +230,7 @@ const Dashboard = () => {
         </section>
 
         {/* 3. 지도 섹션 */}
-        <section className="space-y-3">
+        <section className="space-y-3 text-left">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-lg font-bold">주변 맛집 지도</h3>
             <span className="text-xs font-bold text-slate-500 bg-gray-100 px-3 py-1 rounded-full">
@@ -243,12 +240,13 @@ const Dashboard = () => {
           <div className="w-full h-80 rounded-3xl overflow-hidden shadow-sm border border-gray-100 relative">
             <Suspense
               fallback={
-                <div className="w-full h-full bg-gray-100 animate-pulse flex items-center justify-center">
+                <div className="w-full h-full bg-gray-100 animate-pulse flex items-center justify-center text-xs">
                   지도를 불러오는 중...
                 </div>
               }
             >
-              <KakaoMap />
+              <KakaoMap externalKeyword={mapKeyword} />{' '}
+              {/* ✅ 태환: 챗봇 키워드 전달 */}
             </Suspense>
           </div>
         </section>
@@ -257,13 +255,16 @@ const Dashboard = () => {
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-lg font-bold">Recommended Nearby</h3>
-            <button className="text-xs font-bold text-[#F05A28] cursor-pointer">
-              전체보기 ▶
+            <button
+              className="text-xs font-bold text-[#F05A28] cursor-pointer"
+              onClick={() => navigate('/favorites')}
+            >
+              찜 목록 ▶
             </button>
           </div>
           <div className="space-y-6">
             {restaurants.map((res) => (
-              <div key={res.id} className="group relative text-left">
+              <div key={res.id} className="group relative">
                 <div className="aspect-[16/9] w-full rounded-2xl overflow-hidden shadow-md">
                   <img
                     src={res.img}
@@ -290,8 +291,16 @@ const Dashboard = () => {
                       ))}
                     </div>
                   </div>
-                  <button className="p-2 text-slate-300 hover:text-orange-500 transition-colors cursor-pointer">
-                    <User size={20} />
+                  {/* ✅ 태환: 하트 아이콘 클릭 시 즐겨찾기 추가 */}
+                  <button
+                    onClick={() => addFavorite(res)}
+                    className="p-2 transition-all active:scale-125 cursor-pointer"
+                  >
+                    <Heart
+                      size={24}
+                      color={isFavorite(res.id) ? '#F05A28' : '#cbd5e1'}
+                      fill={isFavorite(res.id) ? '#F05A28' : 'transparent'}
+                    />
                   </button>
                 </div>
               </div>
@@ -299,7 +308,7 @@ const Dashboard = () => {
           </div>
         </section>
 
-        <footer className="mt-6 px-2 pb-12 text-[11px] text-slate-400 space-y-2 leading-relaxed border-t border-gray-100 pt-6 text-left">
+        <footer className="mt-6 px-2 pb-12 text-[11px] text-slate-400 space-y-2 border-t border-gray-100 pt-6">
           <div className="space-y-1">
             <p>
               <span className="font-bold text-slate-500">(주)GIMIBOK</span>
@@ -312,6 +321,7 @@ const Dashboard = () => {
         </footer>
       </main>
 
+      {/* 5. 플로팅 액션 */}
       <div className="fixed bottom-24 right-6 flex flex-col gap-3 z-50">
         <button
           onClick={scrollToTop}
@@ -319,29 +329,22 @@ const Dashboard = () => {
         >
           <ChevronUp size={24} />
         </button>
-        <AiChatBot />
+        <AiChatBot onKeyword={(kw) => setMapKeyword(kw)} />{' '}
+        {/* ✅ 태환: 키워드 전달 함수 연결 */}
       </div>
 
+      {/* 6. 하단 네비게이션 바 */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-100 z-40">
         <div className="flex justify-around items-end px-2 pt-1.5 pb-4 max-w-md mx-auto">
           <button
             onClick={() => setActiveTab('home')}
-            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer transition-all"
+            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"
-                fill={activeTab === 'home' ? '#F05A28' : 'transparent'}
-                stroke={activeTab === 'home' ? '#F05A28' : '#94a3b8'}
-                strokeWidth="1.5"
-              />
-              <path
-                d="M9 21V12h6v9"
-                fill={activeTab === 'home' ? '#fff' : 'transparent'}
-                stroke={activeTab === 'home' ? '#F05A28' : '#94a3b8'}
-                strokeWidth="1.4"
-              />
-            </svg>
+            <Home
+              size={24}
+              color={activeTab === 'home' ? '#F05A28' : '#94a3b8'}
+              strokeWidth={1.5}
+            />
             <span
               className={`text-[10px] font-bold ${activeTab === 'home' ? 'text-[#F05A28]' : 'text-[#94a3b8]'}`}
             >
@@ -351,16 +354,19 @@ const Dashboard = () => {
               <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
             )}
           </button>
-
+          {/* 하단 '찜' 버튼 누를 때 Favorites 페이지로 이동 */}
           <button
-            onClick={() => setActiveTab('save')}
-            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer transition-all"
+            onClick={() => {
+              setActiveTab('save');
+              navigate('/favorites');
+            }}
+            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
           >
             <Heart
               size={24}
               color={activeTab === 'save' ? '#F05A28' : '#94a3b8'}
               fill={activeTab === 'save' ? '#F05A28' : 'transparent'}
-              strokeWidth="1.5"
+              strokeWidth={1.5}
             />
             <span
               className={`text-[10px] font-bold ${activeTab === 'save' ? 'text-[#F05A28]' : 'text-[#94a3b8]'}`}
@@ -371,15 +377,13 @@ const Dashboard = () => {
               <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
             )}
           </button>
-
           <button
             onClick={() => setActiveTab('mydining')}
-            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer transition-all"
+            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
           >
             <MapPin
               size={24}
               color={activeTab === 'mydining' ? '#F05A28' : '#94a3b8'}
-              fill={activeTab === 'mydining' ? '#F05A28' : 'transparent'}
             />
             <span
               className={`text-[10px] font-bold ${activeTab === 'mydining' ? 'text-[#F05A28]' : 'text-[#94a3b8]'}`}
@@ -390,15 +394,13 @@ const Dashboard = () => {
               <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
             )}
           </button>
-
           <button
             onClick={() => setActiveTab('friends')}
-            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer transition-all"
+            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
           >
             <User
               size={24}
               color={activeTab === 'friends' ? '#F05A28' : '#94a3b8'}
-              fill={activeTab === 'friends' ? '#F05A28' : 'transparent'}
             />
             <span
               className={`text-[10px] font-bold ${activeTab === 'friends' ? 'text-[#F05A28]' : 'text-[#94a3b8]'}`}
