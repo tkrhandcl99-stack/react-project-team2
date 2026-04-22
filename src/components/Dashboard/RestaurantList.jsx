@@ -23,12 +23,6 @@ const RestaurantList = ({
     <section className="space-y-4">
       <div className="flex items-center justify-between px-1">
         <h3 className="text-lg font-bold">Recommended Nearby</h3>
-        <button
-          className="text-xs font-bold text-[#F05A28] cursor-pointer"
-          onClick={() => navigate('/favorites')}
-        >
-          찜 목록 ▶
-        </button>
       </div>
       <div className="space-y-6">
         {restaurants.map((res) => (
