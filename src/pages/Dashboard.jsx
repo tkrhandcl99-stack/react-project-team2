@@ -10,6 +10,7 @@ import FloatingActions from '../components/common/FloatingActions';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useYum } from '../contexts/YumContext';
+import usePlaceImage from '../hooks/usePlaceImage';
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -34,9 +35,12 @@ const Dashboard = () => {
   const location = useLocation();
   const { user, loginWithGoogle, logout } = useAuth();
   const { addFavorite, removeFavorite, favorites } = useYum();
+  const { fetchPlaceImage } = usePlaceImage();
 
   const [activeTab, setActiveTab] = useState('home');
   const [mapKeyword, setMapKeyword] = useState('');
+  const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
+  const [isNearbyLoading, setIsNearbyLoading] = useState(true);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -46,6 +50,91 @@ const Dashboard = () => {
       setMapKeyword(chatKeyword);
     }
   }, [location.search]);
+
+  useEffect(() => {
+    const waitForKakaoAndSearch = (latitude, longitude) => {
+      const checkInterval = setInterval(() => {
+        if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
+          clearInterval(checkInterval);
+
+          const ps = new window.kakao.maps.services.Places();
+          const center = new window.kakao.maps.LatLng(latitude, longitude);
+
+          ps.keywordSearch(
+            '맛집',
+            async (data, status) => {
+              if (status === window.kakao.maps.services.Status.OK) {
+                const sliced = data.slice(0, 6);
+
+                const mapped = await Promise.all(
+                  sliced.map(async (place, index) => {
+                    const crawledImage = await fetchPlaceImage(place.place_url);
+
+                    return {
+                      id: Number(place.id) || index + 1,
+                      name: place.place_name,
+                      img:
+                        crawledImage ||
+                        `https://picsum.photos/seed/${place.id || index}/800/500`,
+                      tags: [
+                        `#${place.category_group_name || '맛집'}`,
+                        `#${(place.road_address_name || place.address_name || '근처')
+                          .split(' ')
+                          .slice(0, 2)
+                          .join('')}`,
+                      ],
+                      address: place.road_address_name || place.address_name,
+                      phone: place.phone,
+                      placeUrl: place.place_url,
+                      match: Math.max(80, 98 - index * 3),
+                    };
+                  }),
+                );
+
+                setNearbyRestaurants(mapped);
+              } else {
+                setNearbyRestaurants([]);
+              }
+
+              setIsNearbyLoading(false);
+            },
+            {
+              location: center,
+              radius: 2000,
+              size: 15,
+              sort: window.kakao.maps.services.SortBy.DISTANCE,
+            },
+          );
+        }
+      }, 300);
+    };
+
+    const fallbackSearch = () => {
+      waitForKakaoAndSearch(37.5665, 126.978);
+    };
+
+    if (!navigator.geolocation) {
+      fallbackSearch();
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        waitForKakaoAndSearch(
+          position.coords.latitude,
+          position.coords.longitude,
+        );
+      },
+      () => {
+        fallbackSearch();
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      },
+    );
+  }, [fetchPlaceImage]);
 
   const [userProfile] = useReducer(
     (s, a) => (a.type === 'UPDATE' ? { ...s, ...a.p } : s),
@@ -80,30 +169,6 @@ const Dashboard = () => {
       },
     ],
   };
-
-  const restaurants = [
-    {
-      id: 1,
-      name: '오스테리아 샘킴',
-      match: 98,
-      tags: ['#생면파스타', '#데이트코스'],
-      img: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=800',
-    },
-    {
-      id: 2,
-      name: '스시 코우지',
-      match: 92,
-      tags: ['#오마카세', '#하이엔드'],
-      img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&q=80&w=800',
-    },
-    {
-      id: 3,
-      name: '런던 베이글 뮤지엄',
-      match: 87,
-      tags: ['#베이커리', '#웨이팅맛집'],
-      img: 'https://images.unsplash.com/photo-1585478259715-876acc5be8eb?auto=format&fit=crop&q=80&w=800',
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-slate-900 pb-24 text-left">
@@ -157,7 +222,8 @@ const Dashboard = () => {
         </section>
 
         <RestaurantList
-          restaurants={restaurants}
+          restaurants={nearbyRestaurants}
+          isLoading={isNearbyLoading}
           addFavorite={addFavorite}
           removeFavorite={removeFavorite}
           isFavorite={(id) => favorites.some((f) => f.id === id)}
