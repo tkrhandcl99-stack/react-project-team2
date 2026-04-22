@@ -1,16 +1,45 @@
 // TasteQuest: Premium Main Dashboard (재원 & 영재 & 태환 최종 통합본)
 import React, { useState, useReducer, Suspense } from 'react';
-import { Home, User, Edit2, ChevronUp, LogOut, MapPin } from 'lucide-react';
+import {
+  Home,
+  User,
+  Edit2,
+  ChevronUp,
+  LogOut,
+  MapPin,
+  Heart,
+} from 'lucide-react';
 
 // 컴포넌트 Import
 import KakaoMap from '../components/KakaoMap';
 import AiChatBot from '../components/AiChatBot';
 
-// 영재님 상단 로고 이미지 추가
+// 영재님 상단 로고 이미지
 import GimibokLogo from '../assets/gimibok-logo.svg.webp';
 
-// 로그인 정보 가져오기 (Context 연동)
+// 로그인 정보 가져오기
 import { useAuth } from '../contexts/AuthContext';
+
+// ★ 영재: 차트 관련 Import 및 설정
+import {
+  Chart as ChartJS,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Radar } from 'react-chartjs-2';
+
+ChartJS.register(
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend,
+);
 
 const tasteReducer = (state, action) => {
   switch (action.type) {
@@ -22,14 +51,61 @@ const tasteReducer = (state, action) => {
 };
 
 const Dashboard = () => {
-  // 재원: 로그인 관련 상태 및 함수 가져오기
   const { user, loginWithGoogle, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
 
+  // ★ 영재: 6가지 항목으로 구성된 유저 프로필 상태
   const [userProfile] = useReducer(tasteReducer, {
     nickname: '미식탐험가',
     level: 'Expert',
+    lessSpicy: 4, // 덜맵기
+    moreSpicy: 2, // 매움
+    lessSalty: 3, // 덜짜게
+    moreSalty: 1, // 짜게
+    softness: 5, // 부드러움
+    crunchyTexture: 4, // 식감
   });
+
+  // ★ 영재: 차트 데이터 및 옵션 설정
+  const chartData = {
+    labels: ['덜맵기', '매움', '덜짜게', '짜게', '부드러움', '식감'],
+    datasets: [
+      {
+        label: '내 맛 프로필',
+        data: [
+          userProfile.lessSpicy,
+          userProfile.moreSpicy,
+          userProfile.lessSalty,
+          userProfile.moreSalty,
+          userProfile.softness,
+          userProfile.crunchyTexture,
+        ],
+        backgroundColor: 'rgba(240, 90, 40, 0.2)',
+        borderColor: '#F05A28',
+        borderWidth: 2,
+        pointBackgroundColor: '#F05A28',
+        pointBorderColor: '#fff',
+      },
+    ],
+  };
+
+  const chartOptions = {
+    scales: {
+      r: {
+        angleLines: { display: false },
+        suggestedMin: 1,
+        suggestedMax: 5,
+        ticks: { stepSize: 1, display: false },
+        pointLabels: {
+          font: { size: 11, weight: 'bold' },
+          color: '#F05A28',
+        },
+      },
+    },
+    plugins: { legend: { display: false } },
+    responsive: true,
+    maintainAspectRatio: true,
+  };
 
   const [restaurants] = useState([
     {
@@ -59,60 +135,59 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-slate-900 pb-24">
-      {/* 1. 상단 네비게이션 (영재님 로고 적용) */}
-      <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 h-16 flex items-center justify-between shadow-sm">
-        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-          <Home size={24} className="text-[#F05A28]" />
-        </button>
+      {/* 1. 상단 네비게이션 (영재: 중앙 로고 정렬 / 재원: 회원가입 제거) */}
+      <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 h-16 shadow-sm">
+        <div className="max-w-md mx-auto h-full px-4 flex items-center relative">
+          <div className="absolute left-4">
+            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <Home size={22} className="text-[#F05A28]" />
+            </button>
+          </div>
 
-        {/* 영재: 텍스트 대신 로고 이미지 사용 */}
-        <img
-          src={GimibokLogo}
-          alt="GIMIBOK 로고"
-          className="h-12 w-auto object-contain"
-        />
+          <div className="flex-1 flex justify-center">
+            <img
+              src={GimibokLogo}
+              alt="GIMIBOK 로고"
+              className="h-14 w-auto object-contain"
+            />
+          </div>
 
-        <div className="flex gap-2 items-center">
-          {user ? (
-            <div className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">
-              <img
-                src={user.photoURL}
-                alt="profile"
-                className="w-6 h-6 rounded-full"
-              />
-              <span className="text-xs font-bold text-slate-700">
-                {user.displayName}님
-              </span>
-              <button
-                onClick={logout}
-                className="p-1 hover:text-red-500 transition-colors"
-              >
-                <LogOut size={14} />
-              </button>
-            </div>
-          ) : (
-            <div className="flex gap-1">
-              <button className="px-2 py-1.5 text-xs font-semibold text-slate-600">
-                회원가입
-              </button>
+          <div className="absolute right-4 flex items-center">
+            {user ? (
+              <div className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">
+                <img
+                  src={user.photoURL}
+                  alt="profile"
+                  className="w-6 h-6 rounded-full"
+                />
+                <span className="text-[11px] font-bold text-slate-700">
+                  {user.displayName}님
+                </span>
+                <button
+                  onClick={logout}
+                  className="p-1 hover:text-red-500 transition-colors cursor-pointer"
+                >
+                  <LogOut size={14} />
+                </button>
+              </div>
+            ) : (
               <button
                 onClick={loginWithGoogle}
-                className="bg-[#F05A28] text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow-lg shadow-orange-200"
+                className="bg-[#F05A28] text-white px-3 py-1 rounded-lg text-[11px] font-bold shadow-md shadow-orange-100 active:scale-95 transition-all whitespace-nowrap cursor-pointer"
               >
                 로그인
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </nav>
 
       <main className="max-w-md mx-auto p-4 space-y-6">
-        {/* 2. 프로필 섹션 (영재님 기본 이미지 디자인 적용) */}
-        <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+        {/* 2. 프로필 섹션 (영재: 레이더 차트 적용) */}
+        <section className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-start gap-6">
             <div className="flex flex-col items-center gap-3">
               <div className="relative group">
-                {/* 로그인 여부에 따라 구글 사진 또는 영재님의 기본 아이콘 출력 */}
                 {user ? (
                   <img
                     src={user.photoURL}
@@ -124,7 +199,7 @@ const Dashboard = () => {
                     <User size={48} />
                   </div>
                 )}
-                <button className="absolute bottom-0 right-0 p-1.5 bg-white shadow-md rounded-full text-slate-400 border border-gray-100 hover:text-[#F05A28] transition-colors">
+                <button className="absolute bottom-0 right-0 p-1.5 bg-white shadow-md rounded-full text-slate-400 border border-gray-100 hover:text-[#F05A28] transition-colors cursor-pointer">
                   <Edit2 size={14} />
                 </button>
               </div>
@@ -138,22 +213,20 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <div className="flex-1 relative">
+              <div className="flex items-center mb-2">
+                <h3 className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-[#F05A28] rounded-full"></span>
                   Taste Profile
                 </h3>
-                <span className="text-[10px] font-medium text-[#F05A28] bg-orange-50 px-2 py-0.5 rounded-md">
-                  AI Analyzed
-                </span>
               </div>
-              <div className="aspect-square w-full bg-slate-50 rounded-2xl flex items-center justify-center border border-dashed border-slate-200">
-                <div className="relative w-3/4 h-3/4 border border-slate-200 rounded-full flex items-center justify-center">
-                  <span className="text-[10px] text-slate-300 font-medium">
-                    Radar Chart View
-                  </span>
-                </div>
+              <span className="absolute top-0 right-0 text-[9px] sm:text-[10px] font-medium text-[#F05A28] bg-orange-50 px-2 py-0.5 rounded-md">
+                AI Analyzed
+              </span>
+
+              {/* 육각형 차트 영역 */}
+              <div className="w-full aspect-square flex items-center justify-center overflow-hidden pt-4">
+                <Radar data={chartData} options={chartOptions} />
               </div>
             </div>
           </div>
@@ -184,7 +257,7 @@ const Dashboard = () => {
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-lg font-bold">Recommended Nearby</h3>
-            <button className="text-xs font-bold text-[#F05A28]">
+            <button className="text-xs font-bold text-[#F05A28] cursor-pointer">
               전체보기 ▶
             </button>
           </div>
@@ -217,7 +290,7 @@ const Dashboard = () => {
                       ))}
                     </div>
                   </div>
-                  <button className="p-2 text-slate-300 hover:text-orange-500 transition-colors">
+                  <button className="p-2 text-slate-300 hover:text-orange-500 transition-colors cursor-pointer">
                     <User size={20} />
                   </button>
                 </div>
@@ -226,7 +299,6 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* 푸터 영역 */}
         <footer className="mt-6 px-2 pb-12 text-[11px] text-slate-400 space-y-2 leading-relaxed border-t border-gray-100 pt-6 text-left">
           <div className="space-y-1">
             <p>
@@ -240,7 +312,6 @@ const Dashboard = () => {
         </footer>
       </main>
 
-      {/* 5. 플로팅 액션 영역 */}
       <div className="fixed bottom-24 right-6 flex flex-col gap-3 z-50">
         <button
           onClick={scrollToTop}
@@ -251,13 +322,11 @@ const Dashboard = () => {
         <AiChatBot />
       </div>
 
-      {/* 6. 하단 고정 네비게이션 바 */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-100 z-40">
         <div className="flex justify-around items-end px-2 pt-1.5 pb-4 max-w-md mx-auto">
-          {/* 홈(Explore) 버튼 */}
           <button
             onClick={() => setActiveTab('home')}
-            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
+            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer transition-all"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path
@@ -274,73 +343,71 @@ const Dashboard = () => {
               />
             </svg>
             <span
-              className="text-[10px] font-bold"
-              style={{ color: activeTab === 'home' ? '#F05A28' : '#94a3b8' }}
+              className={`text-[10px] font-bold ${activeTab === 'home' ? 'text-[#F05A28]' : 'text-[#94a3b8]'}`}
             >
-              Explore
+              홈
             </span>
+            {activeTab === 'home' && (
+              <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
+            )}
           </button>
 
-          {/* 저장(Taste) 버튼 */}
           <button
             onClick={() => setActiveTab('save')}
-            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
+            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer transition-all"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M5 5h14a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"
-                stroke={activeTab === 'save' ? '#F05A28' : '#94a3b8'}
-                strokeWidth="1.5"
-              />
-              <path
-                d="M8 21h8M12 16v5"
-                stroke={activeTab === 'save' ? '#F05A28' : '#94a3b8'}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
+            <Heart
+              size={24}
+              color={activeTab === 'save' ? '#F05A28' : '#94a3b8'}
+              fill={activeTab === 'save' ? '#F05A28' : 'transparent'}
+              strokeWidth="1.5"
+            />
             <span
-              className="text-[10px] font-bold"
-              style={{ color: activeTab === 'save' ? '#F05A28' : '#94a3b8' }}
+              className={`text-[10px] font-bold ${activeTab === 'save' ? 'text-[#F05A28]' : 'text-[#94a3b8]'}`}
             >
-              Taste
+              찜
             </span>
+            {activeTab === 'save' && (
+              <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
+            )}
           </button>
 
-          {/* 마이다이닝(Map) 버튼 */}
           <button
             onClick={() => setActiveTab('mydining')}
-            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
+            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer transition-all"
           >
             <MapPin
               size={24}
               color={activeTab === 'mydining' ? '#F05A28' : '#94a3b8'}
+              fill={activeTab === 'mydining' ? '#F05A28' : 'transparent'}
             />
             <span
-              className="text-[10px] font-bold"
-              style={{
-                color: activeTab === 'mydining' ? '#F05A28' : '#94a3b8',
-              }}
+              className={`text-[10px] font-bold ${activeTab === 'mydining' ? 'text-[#F05A28]' : 'text-[#94a3b8]'}`}
             >
-              Map
+              마이다이닝
             </span>
+            {activeTab === 'mydining' && (
+              <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
+            )}
           </button>
 
-          {/* 친구(Profile) 버튼 */}
           <button
             onClick={() => setActiveTab('friends')}
-            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
+            className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer transition-all"
           >
             <User
               size={24}
               color={activeTab === 'friends' ? '#F05A28' : '#94a3b8'}
+              fill={activeTab === 'friends' ? '#F05A28' : 'transparent'}
             />
             <span
-              className="text-[10px] font-bold"
-              style={{ color: activeTab === 'friends' ? '#F05A28' : '#94a3b8' }}
+              className={`text-[10px] font-bold ${activeTab === 'friends' ? 'text-[#F05A28]' : 'text-[#94a3b8]'}`}
             >
-              Profile
+              친구
             </span>
+            {activeTab === 'friends' && (
+              <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
+            )}
           </button>
         </div>
       </nav>
