@@ -3,7 +3,7 @@ import SearchBar from './SearchBar';
 import MapControls from './MapControls';
 import PlaceDetailCard from './PlaceDetailCard';
 
-const KakaoMap = ({ externalKeyword }) => {
+const KakaoMap = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [keyword, setKeyword] = useState('식당');
@@ -32,12 +32,6 @@ const KakaoMap = ({ externalKeyword }) => {
     }, 500);
     return () => clearInterval(checkInterval);
   }, []);
-  useEffect(() => {
-    if (externalKeyword) {
-      setKeyword(externalKeyword);
-      setSelectedPlace(null);
-    }
-  }, [externalKeyword]);
 
   useEffect(() => {
     if (!mapRef.current || !isLoaded) return;
