@@ -33,7 +33,7 @@ ChartJS.register(
 const Dashboard = () => {
   const { user, loginWithGoogle, logout } = useAuth();
   const navigate = useNavigate();
-  const { addFavorite, favorites } = useYum();
+  const { addFavorite, removeFavorite, favorites } = useYum();
   const [activeTab, setActiveTab] = useState('home');
   const [mapKeyword, setMapKeyword] = useState('');
 
@@ -149,6 +149,7 @@ const Dashboard = () => {
         <RestaurantList
           restaurants={restaurants}
           addFavorite={addFavorite}
+          removeFavorite={removeFavorite}
           isFavorite={(id) => favorites.some((f) => f.id === id)}
           navigate={navigate}
         />

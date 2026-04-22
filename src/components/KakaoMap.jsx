@@ -28,8 +28,8 @@ const KakaoMap = ({ externalKeyword = '' }) => {
     <div
       className={`relative transition-all duration-500 shadow-lg overflow-hidden ${
         isExpanded
-          ? 'fixed inset-0 z-[999] bg-white'
-          : 'w-full h-80 rounded-3xl border-2 border-slate-100'
+          ? 'fixed inset-0 z-40 bg-white'
+          : 'w-full h-80 rounded-3xl border-2 border-slate-100 z-0'
       }`}
     >
       <MapControls isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
