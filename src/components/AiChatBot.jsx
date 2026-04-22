@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { MessageCircle } from 'lucide-react';
 
-const AiChatBot = () => {
+const AiChatBot = ({ onKeyword }) => {
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -12,18 +12,54 @@ const AiChatBot = () => {
 
     const userMsg = { role: 'user', text: input };
     setMessages((prev) => [...prev, userMsg]);
+    const currentInput = input; // ✅ 추가
     setInput('');
     setLoading(true);
 
     const res = await fetch('http://localhost:3001/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: input }),
+      body: JSON.stringify({ message: currentInput }),
     });
 
     const data = await res.json();
-    setMessages((prev) => [...prev, { role: 'ai', text: data.reply }]);
-    setLoading(false);
+
+    const keywords = [
+      '맛집',
+      '식당',
+      '음식',
+      '먹고싶',
+      '가고싶',
+      '추천',
+      '김밥',
+      '라멘',
+      '파스타',
+      '초밥',
+      '카페',
+      '치킨',
+      '피자',
+      '햄버거',
+      '국밥',
+      '냉면',
+    ];
+    const hasKeyword = keywords.some((k) => currentInput.includes(k));
+
+    if (hasKeyword && onKeyword) {
+      onKeyword(currentInput); // ✅ 지도로 키워드 전달
+    }
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        // ✅ 주석 해제
+        role: 'ai',
+        text: data.reply,
+        mapUrl: hasKeyword
+          ? `https://map.kakao.com/?q=${encodeURIComponent(currentInput)}`
+          : null,
+      },
+    ]);
+    setLoading(false); // ✅ 주석 해제
   };
 
   return (

@@ -1,11 +1,21 @@
-import Dashboard from './pages/Dashboard'; // Dashboard 파일 경로 확인!
-import './index.css'; // 테일윈드가 들어있는 CSS 불러오기
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { YumProvider } from './contexts/YumContext';
+import Dashboard from './pages/Dashboard';
+import Favorites from './pages/Favorites';
+import './index.css';
 
 function App() {
   return (
     <AuthProvider>
-      <Dashboard />
+      <YumProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/favorites" element={<Favorites />} />
+          </Routes>
+        </BrowserRouter>
+      </YumProvider>
     </AuthProvider>
   );
 }

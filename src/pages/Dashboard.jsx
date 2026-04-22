@@ -5,6 +5,8 @@ import { Home, User, Edit2, ChevronUp, LogOut } from 'lucide-react';
 // 컴포넌트 Import
 import KakaoMap from '../components/KakaoMap';
 import AiChatBot from '../components/AiChatBot';
+import { useNavigate } from 'react-router-dom';
+import { useYum } from '../contexts/YumContext';
 
 // 로그인 정보 가져오기 (폴더명 s 확인!)
 import { useAuth } from '../contexts/AuthContext';
@@ -20,7 +22,11 @@ const tasteReducer = (state, action) => {
 
 const Dashboard = () => {
   const { user, loginWithGoogle, logout } = useAuth();
+  const navigate = useNavigate(); // ✅ 추가
+  const { addFavorite, favorites } = useYum(); // ✅ 추가
+  const isFavorite = (id) => favorites.some((f) => f.id === id); // ✅ 추가
   const [activeTab, setActiveTab] = useState('home');
+  const [mapKeyword, setMapKeyword] = useState(''); // ✅ 추가
 
   const [userProfile] = useReducer(tasteReducer, {
     nickname: '미식탐험가',
@@ -149,7 +155,7 @@ const Dashboard = () => {
                 </div>
               }
             >
-              <KakaoMap />
+              <KakaoMap externalKeyword={mapKeyword} />
             </Suspense>
           </div>
         </section>
@@ -184,7 +190,13 @@ const Dashboard = () => {
                       ))}
                     </div>
                   </div>
-                  <button className="p-2 text-slate-300">
+                  <button
+                    onClick={() => addFavorite(res)}
+                    className="p-2 transition-colors cursor-pointer"
+                    style={{
+                      color: isFavorite(res.id) ? '#F05A28' : '#cbd5e1',
+                    }}
+                  >
                     <User size={20} />
                   </button>
                 </div>
@@ -215,7 +227,7 @@ const Dashboard = () => {
         >
           <ChevronUp size={24} />
         </button>
-        <AiChatBot />
+        <AiChatBot onKeyword={(kw) => setMapKeyword(kw)} />
       </div>
 
       {/* 6. 하단 고정 네비게이션 바 */}
@@ -253,7 +265,10 @@ const Dashboard = () => {
 
           {/* 저장 버튼 */}
           <button
-            onClick={() => setActiveTab('save')}
+            onClick={() => {
+              setActiveTab('save');
+              navigate('/favorites'); // ✅ 추가
+            }}
             className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -270,7 +285,7 @@ const Dashboard = () => {
               className="text-[10px] font-bold"
               style={{ color: activeTab === 'save' ? '#F05A28' : '#94a3b8' }}
             >
-              저장
+              찜
             </span>
             {activeTab === 'save' && (
               <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
