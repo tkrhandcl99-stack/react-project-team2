@@ -13,7 +13,7 @@ app.post('/api/chat', async (req, res) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'llama3',
-      prompt: `당신은 한국어로만 대답하는 맛집 추천 AI 어시스턴트입니다. 반드시 한국어로만 답변해주세요.\n\n사용자 질문: ${message}`,
+      prompt: message,
       stream: false,
     }),
   });
