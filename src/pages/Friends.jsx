@@ -1,8 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowLeft, Search, UserPlus } from 'lucide-react';
+import { Search, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Header from '../components/Dashboard/Header';
 import NavigationBar from '../components/Dashboard/NavigationBar';
 import FriendCard from '../components/Friends/FriendCard';
+import FloatingActions from '../components/common/FloatingActions';
+import { useAuth } from '../contexts/AuthContext';
 
 const initialFriends = [
   {
@@ -36,6 +39,7 @@ const initialFriends = [
 
 const Friends = () => {
   const navigate = useNavigate();
+  const { user, loginWithGoogle, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('friends');
   const [query, setQuery] = useState('');
   const [friends, setFriends] = useState(initialFriends);
@@ -61,24 +65,14 @@ const Friends = () => {
 
   return (
     <div className="min-h-screen bg-[#f9f9f9] text-slate-900 pb-24">
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-md mx-auto h-16 px-5 flex items-center justify-between">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
-          >
-            <ArrowLeft size={22} />
-          </button>
+      <Header
+        user={user}
+        loginWithGoogle={loginWithGoogle}
+        logout={logout}
+        navigate={navigate}
+      />
 
-          <h1 className="text-xl font-extrabold text-[#ff5722]">
-            Friends Circle
-          </h1>
-
-          <div className="w-10" />
-        </div>
-      </header>
-
-      <main className="max-w-md mx-auto px-5 pt-6 pb-8">
+      <main className="max-w-md mx-auto px-5 pt-20 pb-8">
         <section className="mb-8">
           <div className="flex flex-col gap-4">
             <h2 className="text-xl font-bold text-slate-900">Friends Circle</h2>
@@ -127,6 +121,8 @@ const Friends = () => {
           </button>
         </section>
       </main>
+
+      <FloatingActions />
 
       <NavigationBar
         activeTab={activeTab}

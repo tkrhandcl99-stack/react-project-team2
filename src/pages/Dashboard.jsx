@@ -1,13 +1,12 @@
-import React, { useState, useReducer, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChevronUp } from 'lucide-react';
+import React, { useEffect, useReducer, Suspense, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import Header from '../components/Dashboard/Header';
 import ProfileCard from '../components/Dashboard/ProfileCard';
 import RestaurantList from '../components/Dashboard/RestaurantList';
 import NavigationBar from '../components/Dashboard/NavigationBar';
 import KakaoMap from '../components/KakaoMap';
-import AiChatBot from '../components/AiChatBot';
+import FloatingActions from '../components/common/FloatingActions';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useYum } from '../contexts/YumContext';
@@ -31,11 +30,22 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
-  const { user, loginWithGoogle, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, loginWithGoogle, logout } = useAuth();
   const { addFavorite, removeFavorite, favorites } = useYum();
+
   const [activeTab, setActiveTab] = useState('home');
   const [mapKeyword, setMapKeyword] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const chatKeyword = params.get('chatKeyword');
+
+    if (chatKeyword) {
+      setMapKeyword(chatKeyword);
+    }
+  }, [location.search]);
 
   const [userProfile] = useReducer(
     (s, a) => (a.type === 'UPDATE' ? { ...s, ...a.p } : s),
@@ -104,7 +114,7 @@ const Dashboard = () => {
         navigate={navigate}
       />
 
-      <main className="max-w-md mx-auto p-4 space-y-6">
+      <main className="max-w-md mx-auto p-4 pt-20 space-y-6">
         <ProfileCard
           user={user}
           userProfile={userProfile}
@@ -153,29 +163,9 @@ const Dashboard = () => {
           isFavorite={(id) => favorites.some((f) => f.id === id)}
           navigate={navigate}
         />
-
-        <footer className="mt-6 px-2 pb-12 text-[11px] text-slate-400 space-y-2 border-t border-gray-100 pt-6">
-          <div className="space-y-1">
-            <p>
-              <span className="font-bold text-slate-500">(주)GIMIBOK</span>
-            </p>
-            <p>대표 : 김기복 | 팀장 : 이재원</p>
-          </div>
-          <p className="text-[10px] text-slate-300 pt-1">
-            © 2026 GIMIBOK. All rights reserved.
-          </p>
-        </footer>
       </main>
 
-      <div className="fixed bottom-24 right-6 flex flex-col gap-3 z-50">
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="p-3 bg-white shadow-xl rounded-full text-slate-400 hover:text-slate-900 border border-gray-100 active:scale-90 transition-all cursor-pointer"
-        >
-          <ChevronUp size={24} />
-        </button>
-        <AiChatBot onKeyword={setMapKeyword} />
-      </div>
+      <FloatingActions onKeyword={setMapKeyword} />
 
       <NavigationBar
         activeTab={activeTab}

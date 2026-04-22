@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Header from '../components/Dashboard/Header';
 import NavigationBar from '../components/Dashboard/NavigationBar';
 import RestaurantHistoryCard from '../components/MyDining/RestaurantHistoryCard';
+import FloatingActions from '../components/common/FloatingActions';
+import { useAuth } from '../contexts/AuthContext';
 
 const restaurants = [
   {
@@ -53,26 +55,19 @@ const statItems = [
 
 const MyDining = () => {
   const navigate = useNavigate();
+  const { user, loginWithGoogle, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('mydining');
 
   return (
     <div className="min-h-screen bg-[#f9f9f9] text-slate-900 pb-24">
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-md mx-auto h-16 px-5 flex items-center justify-between">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 rounded-full hover:bg-gray-100 active:scale-95 transition"
-          >
-            <ArrowLeft size={22} />
-          </button>
+      <Header
+        user={user}
+        loginWithGoogle={loginWithGoogle}
+        logout={logout}
+        navigate={navigate}
+      />
 
-          <h1 className="text-xl font-extrabold text-[#F05A28]">My Dining</h1>
-
-          <div className="w-10" />
-        </div>
-      </header>
-
-      <main className="max-w-md mx-auto px-5 py-6 space-y-8">
+      <main className="max-w-md mx-auto px-5 pt-20 py-6 space-y-8">
         <section>
           <h1 className="text-3xl font-extrabold text-slate-900 mb-1">
             My Dining
@@ -139,6 +134,8 @@ const MyDining = () => {
           </div>
         </section>
       </main>
+
+      <FloatingActions />
 
       <NavigationBar
         activeTab={activeTab}
