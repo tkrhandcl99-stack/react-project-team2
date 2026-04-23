@@ -1,8 +1,8 @@
-import React, { useEffect, useReducer, Suspense, useState } from 'react';
+import React, { useEffect, Suspense, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import Header from '../components/Dashboard/Header';
-import ProfileCard from '../components/Dashboard/ProfileCard';
+import ProfileCard from '../components/Dashboard/profileCard';
 import RestaurantList from '../components/Dashboard/RestaurantList';
 import NavigationBar from '../components/Dashboard/NavigationBar';
 import KakaoMap from '../components/KakaoMap';
@@ -10,31 +10,15 @@ import FloatingActions from '../components/common/FloatingActions';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useYum } from '../contexts/YumContext';
+import { useTasteProfile } from '../contexts/TasteProfileContext';
 import usePlaceImage from '../hooks/usePlaceImage';
-import {
-  Chart as ChartJS,
-  RadialLinearScale,
-  PointElement,
-  LineElement,
-  Filler,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-
-ChartJS.register(
-  RadialLinearScale,
-  PointElement,
-  LineElement,
-  Filler,
-  Tooltip,
-  Legend,
-);
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loginWithGoogle, logout } = useAuth();
   const { addFavorite, removeFavorite, favorites } = useYum();
+  const { tasteProfile } = useTasteProfile();
   const { fetchPlaceImage } = usePlaceImage();
 
   const [activeTab, setActiveTab] = useState('home');
@@ -78,7 +62,11 @@ const Dashboard = () => {
                         `https://picsum.photos/seed/${place.id || index}/800/500`,
                       tags: [
                         `#${place.category_group_name || '맛집'}`,
-                        `#${(place.road_address_name || place.address_name || '근처')
+                        `#${(
+                          place.road_address_name ||
+                          place.address_name ||
+                          '근처'
+                        )
                           .split(' ')
                           .slice(0, 2)
                           .join('')}`,
@@ -136,38 +124,9 @@ const Dashboard = () => {
     );
   }, [fetchPlaceImage]);
 
-  const [userProfile] = useReducer(
-    (s, a) => (a.type === 'UPDATE' ? { ...s, ...a.p } : s),
-    {
-      nickname: '미식탐험가',
-      level: 'Expert',
-      lessSpicy: 4,
-      moreSpicy: 2,
-      lessSalty: 3,
-      moreSalty: 1,
-      softness: 5,
-      crunchyTexture: 4,
-    },
-  );
-
-  const chartData = {
-    labels: ['덜맵기', '매움', '덜짜게', '짜게', '부드러움', '식감'],
-    datasets: [
-      {
-        data: [
-          userProfile.lessSpicy,
-          userProfile.moreSpicy,
-          userProfile.lessSalty,
-          userProfile.moreSalty,
-          userProfile.softness,
-          userProfile.crunchyTexture,
-        ],
-        backgroundColor: 'rgba(240, 90, 40, 0.2)',
-        borderColor: '#F05A28',
-        borderWidth: 2,
-        pointBackgroundColor: '#F05A28',
-      },
-    ],
+  const userProfile = {
+    nickname: '미식탐험가',
+    level: 'Expert',
   };
 
   return (
@@ -183,24 +142,8 @@ const Dashboard = () => {
         <ProfileCard
           user={user}
           userProfile={userProfile}
-          chartData={chartData}
-          chartOptions={{
-            scales: {
-              r: {
-                angleLines: { display: false },
-                suggestedMin: 1,
-                suggestedMax: 5,
-                ticks: { display: false },
-                pointLabels: {
-                  font: { size: 10, weight: 'bold' },
-                  color: '#F05A28',
-                },
-              },
-            },
-            plugins: { legend: { display: false } },
-            responsive: true,
-            maintainAspectRatio: true,
-          }}
+          tasteProfile={tasteProfile}
+          onEditTasteProfile={() => navigate('/profile/taste')}
         />
 
         <section className="space-y-3">
