@@ -28,13 +28,17 @@ const Dashboard = () => {
   const [isNearbyLoading, setIsNearbyLoading] = useState(true);
   const [currentLocation, setCurrentLocation] = useState(null);
 
+  // userProfile - userCode는 uid 앞 8자리 대문자
+  const userProfile = {
+    nickname: user?.displayName || '미식탐험가',
+    level: 'Expert',
+    userCode: user?.uid?.slice(0, 8).toUpperCase() || 'GUEST_01',
+  };
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const chatKeyword = params.get('chatKeyword');
-
-    if (chatKeyword) {
-      setMapKeyword(chatKeyword);
-    }
+    if (chatKeyword) setMapKeyword(chatKeyword);
   }, [location.search]);
 
   useEffect(() => {
@@ -80,8 +84,6 @@ const Dashboard = () => {
                       match: Math.max(80, 98 - index * 3),
                       lat: Number(place.y),
                       lng: Number(place.x),
-
-                      // 임시 리뷰 데이터
                       reviews: [
                         {
                           rating: 5,
@@ -100,7 +102,6 @@ const Dashboard = () => {
               } else {
                 setNearbyRestaurants([]);
               }
-
               setIsNearbyLoading(false);
             },
             {
@@ -115,11 +116,10 @@ const Dashboard = () => {
     };
 
     const fallbackSearch = () => {
-      const fallbackLat = 37.5665;
-      const fallbackLng = 126.978;
-
-      setCurrentLocation({ lat: fallbackLat, lng: fallbackLng });
-      waitForKakaoAndSearch(fallbackLat, fallbackLng);
+      const lat = 37.5665;
+      const lng = 126.978;
+      setCurrentLocation({ lat, lng });
+      waitForKakaoAndSearch(lat, lng);
     };
 
     if (!navigator.geolocation) {
@@ -131,29 +131,13 @@ const Dashboard = () => {
       (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
-
         setCurrentLocation({ lat, lng });
         waitForKakaoAndSearch(lat, lng);
       },
-      () => {
-        const fallbackLat = 37.5665;
-        const fallbackLng = 126.978;
-
-        setCurrentLocation({ lat: fallbackLat, lng: fallbackLng });
-        waitForKakaoAndSearch(fallbackLat, fallbackLng);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      },
+      () => fallbackSearch(),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
   }, [fetchPlaceImage]);
-
-  const userProfile = {
-    nickname: '미식탐험가',
-    level: 'Expert',
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-slate-900 pb-24 text-left">
@@ -181,7 +165,6 @@ const Dashboard = () => {
           <div className="flex items-center justify-between px-1">
             <h3 className="text-lg font-bold">주변 맛집 지도</h3>
           </div>
-
           <div className="w-full h-80 rounded-3xl overflow-hidden shadow-sm border border-gray-100 relative">
             <Suspense
               fallback={

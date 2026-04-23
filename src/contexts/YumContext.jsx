@@ -2,26 +2,78 @@ import { createContext, useState, useContext } from 'react';
 
 const YumContext = createContext();
 
-export const YumProvider = ({ children }) => {
-  // 찜한 맛집 리스트를 담을 전역 상태
-  const [favorites, setFavorites] = useState([]);
+const MAX_HISTORY = 10;
 
-  // 찜 추가 함수 (C)
+const normalizeRestaurant = (data) => {
+  if (data.place_name) {
+    return {
+      id: data.id || data.place_name,
+      name: data.place_name,
+      img: data.imageUrl || `https://picsum.photos/seed/${data.id}/800/500`,
+      tags: [
+        `#${data.category_group_name || '맛집'}`,
+        `#${(data.road_address_name || data.address_name || '근처')
+          .split(' ')
+          .slice(0, 2)
+          .join('')}`,
+      ],
+      address: data.road_address_name || data.address_name,
+      phone: data.phone,
+      placeUrl: data.place_url,
+      match: null,
+    };
+  }
+  return data;
+};
+
+export const YumProvider = ({ children }) => {
+  const [favorites, setFavorites] = useState([]);
+  const [visitHistory, setVisitHistory] = useState([]);
+  const [friends, setFriends] = useState([]);
+
   const addFavorite = (shop) => {
     setFavorites((prev) => [...prev, shop]);
   };
 
-  // 찜 삭제 함수 (D)
   const removeFavorite = (id) => {
     setFavorites((prev) => prev.filter((shop) => shop.id !== id));
   };
 
+  const addToHistory = (rawData) => {
+    const restaurant = normalizeRestaurant(rawData);
+    setVisitHistory((prev) => {
+      const filtered = prev.filter((r) => r.id !== restaurant.id);
+      const updated = [restaurant, ...filtered];
+      return updated.slice(0, MAX_HISTORY);
+    });
+  };
+
+  const addFriend = (newFriend) => {
+    setFriends((prev) => [newFriend, ...prev]);
+  };
+
   return (
-    <YumContext.Provider value={{ favorites, addFavorite, removeFavorite }}>
+    <YumContext.Provider
+      value={{
+        favorites,
+        addFavorite,
+        removeFavorite,
+        visitHistory,
+        addToHistory,
+        friends,
+        setFriends,
+        addFriend,
+      }}
+    >
       {children}
     </YumContext.Provider>
   );
 };
 
-// 다른 곳에서 편하게 쓰기 위한 커스텀 훅
-export const useYum = () => useContext(YumContext);
+export const useYum = () => {
+  const context = useContext(YumContext);
+  if (!context) {
+    throw new Error('useYum은 YumProvider 안에서 사용되어야 합니다.');
+  }
+  return context;
+};
