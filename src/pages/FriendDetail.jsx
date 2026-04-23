@@ -4,13 +4,14 @@ import { ChevronLeft, Utensils, Quote, MessageCircle, ArrowUp } from 'lucide-rea
 import TasteRadar from '../components/common/TasteRadar';
 import NavigationBar from '../components/Dashboard/NavigationBar';
 
-const tagTranslation = {
-  'Umami Expert': '감칠맛 전문가',
-  'Spicy Hunter': '매운맛 사냥꾼',
-  'Sweet Tooth': '단맛 매니아',
-  'Pastry Critic': '디저트 비평가',
-  'Salty Snack Hero': '짠맛 히어로',
-  'Wine Taster': '와인 소믈리에',
+// ✅ 태그별 상세 설명 데이터 추가
+const tagDescriptions = {
+  '#매운맛 고수 🌶️': '스트레스 풀리는 매운맛을 가장 즐겨요 🌶️',
+  '#식감 마스터 ✨': '꼬들함과 바삭함 등 입안의 즐거움을 찾아요 ✨',
+  '#단짠 천재 🧂': '멈출 수 없는 중독적인 단짠의 조화를 선호해요 🧂',
+  '#달콤 처돌이 🍭': '지친 하루를 달래줄 달콤한 디저트에 진심이에요 🍭',
+  '#감칠맛 박사 🍜': '재료 본연의 깊고 진한 풍미를 중요하게 생각해요 🍜',
+  '#미식 탐험가': '기미복이 인증하는 균형 잡힌 입맛의 소유자입니다'
 };
 
 const FriendDetail = () => {
@@ -19,7 +20,20 @@ const FriendDetail = () => {
   const location = useLocation();
   const friend = location.state?.friend;
 
-  // 최상단 이동 함수
+  // ✅ 동적 태그 생성 함수 추가
+  const getTasteTags = (profile) => {
+    if (!profile) return ['#미식 탐험가'];
+    const tags = [];
+    if (profile.spicy >= 4) tags.push('#매운맛 고수 🌶️');
+    if (profile.texture >= 4) tags.push('#식감 마스터 ✨');
+    if (profile.saltiness >= 4) tags.push('#단짠 천재 🧂');
+    if (profile.sweetness >= 4) tags.push('#달콤 처돌이 🍭');
+    if (profile.umami >= 4) tags.push('#감칠맛 박사 🍜');
+    return tags.length > 0 ? tags : ['#미식 탐험가'];
+  };
+
+  const myTags = useMemo(() => getTasteTags(friend?.tasteProfile), [friend]);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -80,7 +94,6 @@ const FriendDetail = () => {
 
   return (
     <div className="min-h-screen bg-[#f9f9f9] pb-32 relative">
-      {/* 🚀 콘텐츠 너비에 맞춘 상단 헤더 */}
       <div className="fixed top-2 left-0 right-0 z-50 flex justify-center px-5">
         <div className="w-full max-w-md h-14 bg-white/90 backdrop-blur-md shadow-lg shadow-slate-200/50 rounded-2xl flex items-center justify-between px-2 border border-gray-100">
           <div className="w-10 flex justify-center">
@@ -97,7 +110,6 @@ const FriendDetail = () => {
       </div>
 
       <main className="max-w-md mx-auto pt-20 px-5 space-y-6">
-        {/* 1. 프로필 분석 섹션 */}
         <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center">
           <div className="w-24 h-24 rounded-full border-4 border-[#ff5722] mb-4 overflow-hidden shadow-md">
             <img 
@@ -113,17 +125,29 @@ const FriendDetail = () => {
           <div className="w-full py-6 bg-gray-50 rounded-3xl flex flex-col items-center">
             <span className="text-[11px] font-bold text-slate-400 mb-4 tracking-widest">TASTE PALETTE</span>
             <TasteRadar profile={friend.tasteProfile} size={220} />
+            
+            {/* ✅ [수정 완료] 진한 주황색 + 확대 효과 + 툴팁 적용 영역 */}
             <div className="flex flex-wrap justify-center gap-2 mt-6 px-4">
-              {friend.tags.map(tag => (
-                <span key={tag} className="px-3 py-1.5 bg-white border border-gray-100 text-[12px] font-bold rounded-full text-slate-600 shadow-sm">
-                  {tagTranslation[tag] || tag}
-                </span>
+              {myTags.map((tag) => (
+                <div key={tag} className="group relative cursor-help">
+                  <span className="px-1 py-0.5 text-[14px] font-black text-[#F05A28] transition-all duration-200 inline-block group-hover:scale-110">
+                    {tag}
+                  </span>
+                  
+                  {/* 툴팁 설명창 */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 z-50 animate-in fade-in zoom-in duration-200">
+                    <div className="bg-slate-800 text-white text-[10px] p-2.5 rounded-xl shadow-xl text-center leading-relaxed font-medium">
+                      {tagDescriptions[tag]}
+                      {/* 화살표 */}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-800"></div>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* 2. 맛 취향 분석 코멘트 */}
         <section className="bg-[#fff9f0] p-6 rounded-2xl border border-[#ffe9cc]">
           <div className="flex items-center gap-2 mb-3">
             <Quote size={18} className="text-[#ff5722] fill-[#ff5722]" />
@@ -134,7 +158,6 @@ const FriendDetail = () => {
           </p>
         </section>
 
-        {/* 3. 같이 가볼만한 곳 */}
         <section className="space-y-4">
           <h3 className="font-bold text-lg flex items-center gap-2 px-1">
             🤝 <span className="text-[#ff5722]">{friend.name}</span> 님과 같이 가볼만한 곳
@@ -158,11 +181,9 @@ const FriendDetail = () => {
         </section>
       </main>
 
-      {/* 🔘 플로팅 버튼 세트: 하단 바 위, 콘텐츠 박스 우측에 고정 */}
       <div className="fixed bottom-0 left-0 right-0 pointer-events-none z-50 flex justify-center">
         <div className="w-full max-w-md relative h-screen">
           <div className="absolute bottom-24 right-5 flex flex-col gap-3 items-center pointer-events-auto">
-            {/* 탑 버튼 */}
             <button 
               onClick={scrollToTop}
               className="w-10 h-10 bg-white border border-gray-100 rounded-full shadow-lg flex items-center justify-center text-slate-400 hover:text-[#ff5722] transition-colors"
@@ -170,7 +191,6 @@ const FriendDetail = () => {
               <ArrowUp size={20} />
             </button>
 
-            {/* 챗봇 버튼 */}
             <button className="w-14 h-14 bg-[#ff5722] rounded-full shadow-xl shadow-orange-200 flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-all">
               <MessageCircle size={28} fill="white" />
             </button>
