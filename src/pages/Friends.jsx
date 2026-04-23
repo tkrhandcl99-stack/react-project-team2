@@ -14,7 +14,13 @@ const initialFriends = [
     username: 'foodie_elena',
     image:
       'https://lh3.googleusercontent.com/aida-public/AB6AXuBdQTpncv7kzwX4EmENTvOTezpRGWe4DBpRrQlKSpYznzctu_PPP_-oGCnW8Ppe4HT51zjVh-IHMipswyplRl8dFC7yhJSXDQzY_K4ZYVDoK5EBKuv9aZolWxaKmpFu9iXSlvPd5hHNR_vugvZNOoMKutJwyG_0ZDCv995KTZpm4sftKNrN9Beg8m6eVdjx43GsbNPFaZCctbHEh8FAX5pwbPMcxBbstGHjtDCB1tnIsLX7-CQrmYK1zvZKb99BwNdtSnsDEPNp-TzV',
-    radarPoints: '50,15 85,45 70,80 40,75 20,40',
+    tasteProfile: {
+      spicy: 4,
+      texture: 3,
+      saltiness: 2,
+      sweetness: 1,
+      umami: 5,
+    },
     tags: ['Umami Expert', 'Spicy Hunter'],
   },
   {
@@ -23,7 +29,13 @@ const initialFriends = [
     username: 'marcus_eats',
     image:
       'https://lh3.googleusercontent.com/aida-public/AB6AXuAG8q4PIalMK9L96Iqz7pJTntY1NajB5quH6Ljrik5dPDZjns3y0-5Sc33BjalfBzaxq-Ldbb7mEwtTWvB6VGse2F7LqUiXfSzBvLnSHPtk1Ts1iUwfdLUUGjDzVl8JLnkrKdqd43rPoQ5fEQ4FVcxFZAQttD7TLN2J4Wcm4qkEP7l2wVcYsH2cz1vFMRXjM-7KjQ_OravneRNaZIzD803VpNM_n-Uy1BOzKZfYtUDEMDSG2NUSwfK2nUgcK2WZCgePkCFo8jbg18tN',
-    radarPoints: '50,30 90,40 60,70 30,85 10,40',
+    tasteProfile: {
+      spicy: 2,
+      texture: 2,
+      saltiness: 3,
+      sweetness: 5,
+      umami: 3,
+    },
     tags: ['Sweet Tooth', 'Pastry Critic'],
   },
   {
@@ -32,7 +44,13 @@ const initialFriends = [
     username: 'sarah_j_cooks',
     image:
       'https://lh3.googleusercontent.com/aida-public/AB6AXuBhWxa4t29IuP_vikzAdWtP1cbhA0twQ6CEnvAh2InpsmHI3HejvvmZx4qlPuW0Dpm88NfhH4VwfEStgWFSj9wu4HGM2SwRQ9Up46HdhbmAs03q7UwlUtRIjeDtK-hdccrS5BoU4eGPWU4L0UNjDPQv84zLfv8TM5LklufTaAeYGKUzqClWifdd-hJ6BhTKGIPojKIvmiBsUSBgWREWswCgw3kg6dzQV_sP0NBa784uofIo-w3rC55vfBzX3HuYgVKCsOuHddCLUH8h',
-    radarPoints: '50,45 60,35 90,85 60,95 30,50',
+    tasteProfile: {
+      spicy: 3,
+      texture: 4,
+      saltiness: 5,
+      sweetness: 2,
+      umami: 4,
+    },
     tags: ['Salty Snack Hero', 'Wine Taster'],
   },
 ];

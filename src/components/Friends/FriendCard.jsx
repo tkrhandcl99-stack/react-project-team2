@@ -1,32 +1,6 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
-
-const TasteRadar = ({ points }) => {
-  return (
-    <div className="relative w-32 h-32">
-      <svg viewBox="0 0 100 100" className="w-full h-full">
-        <polygon
-          points="50,5 95,38 78,90 22,90 5,38"
-          fill="none"
-          stroke="#e2e2e2"
-          strokeWidth="1"
-        />
-        <polygon
-          points="50,25 72,41 64,67 36,67 28,41"
-          fill="none"
-          stroke="#e2e2e2"
-          strokeWidth="1"
-        />
-        <polygon
-          points={points}
-          fill="rgba(255, 87, 34, 0.2)"
-          stroke="#ff5722"
-          strokeWidth="2"
-        />
-      </svg>
-    </div>
-  );
-};
+import TasteRadar from '../common/TasteRadar';
 
 const FriendCard = ({ friend, onDelete, onViewProfile }) => {
   return (
@@ -50,7 +24,11 @@ const FriendCard = ({ friend, onDelete, onViewProfile }) => {
           TASTE PALETTE
         </span>
 
-        <TasteRadar points={friend.radarPoints} />
+        <TasteRadar
+          profile={friend.tasteProfile}
+          size={150}
+          showLabels={false}
+        />
 
         <div className="flex flex-wrap justify-center gap-2 mt-3 px-2">
           {friend.tags.map((tag) => (

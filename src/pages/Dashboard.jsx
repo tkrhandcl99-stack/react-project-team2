@@ -1,10 +1,15 @@
+<<<<<<< HEAD
 import React, { useState, useReducer, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronUp } from 'lucide-react';
+=======
+import React, { useEffect, Suspense, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+>>>>>>> c278fb9df2eb3c37725e22bb490455ce4947fa76
 
 // 분리한 컴포넌트들 Import
 import Header from '../components/Dashboard/Header';
-import ProfileCard from '../components/Dashboard/ProfileCard';
+import ProfileCard from '../components/Dashboard/profileCard';
 import RestaurantList from '../components/Dashboard/RestaurantList';
 import NavigationBar from '../components/Dashboard/NavigationBar';
 import KakaoMap from '../components/KakaoMap';
@@ -13,6 +18,7 @@ import AiChatBot from '../components/AiChatBot';
 // Context & Chart Setting
 import { useAuth } from '../contexts/AuthContext';
 import { useYum } from '../contexts/YumContext';
+<<<<<<< HEAD
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -30,46 +36,130 @@ ChartJS.register(
   Tooltip,
   Legend,
 );
+=======
+import { useTasteProfile } from '../contexts/TasteProfileContext';
+import usePlaceImage from '../hooks/usePlaceImage';
+>>>>>>> c278fb9df2eb3c37725e22bb490455ce4947fa76
 
 const Dashboard = () => {
   const { user, loginWithGoogle, logout } = useAuth();
+<<<<<<< HEAD
   const navigate = useNavigate();
   const { addFavorite, favorites } = useYum();
   const [activeTab, setActiveTab] = useState('home');
   const [mapKeyword, setMapKeyword] = useState('');
+=======
+  const { addFavorite, removeFavorite, favorites } = useYum();
+  const { tasteProfile } = useTasteProfile();
+  const { fetchPlaceImage } = usePlaceImage();
 
-  const [userProfile] = useReducer(
-    (s, a) => (a.type === 'UPDATE' ? { ...s, ...a.p } : s),
-    {
-      nickname: '미식탐험가',
-      level: 'Expert',
-      lessSpicy: 4,
-      moreSpicy: 2,
-      lessSalty: 3,
-      moreSalty: 1,
-      softness: 5,
-      crunchyTexture: 4,
-    },
-  );
+  const [activeTab, setActiveTab] = useState('home');
+  const [mapKeyword, setMapKeyword] = useState('');
+  const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
+  const [isNearbyLoading, setIsNearbyLoading] = useState(true);
 
-  const chartData = {
-    labels: ['덜맵기', '매움', '덜짜게', '짜게', '부드러움', '식감'],
-    datasets: [
-      {
-        data: [
-          userProfile.lessSpicy,
-          userProfile.moreSpicy,
-          userProfile.lessSalty,
-          userProfile.moreSalty,
-          userProfile.softness,
-          userProfile.crunchyTexture,
-        ],
-        backgroundColor: 'rgba(240, 90, 40, 0.2)',
-        borderColor: '#F05A28',
-        borderWidth: 2,
-        pointBackgroundColor: '#F05A28',
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const chatKeyword = params.get('chatKeyword');
+
+    if (chatKeyword) {
+      setMapKeyword(chatKeyword);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    const waitForKakaoAndSearch = (latitude, longitude) => {
+      const checkInterval = setInterval(() => {
+        if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
+          clearInterval(checkInterval);
+
+          const ps = new window.kakao.maps.services.Places();
+          const center = new window.kakao.maps.LatLng(latitude, longitude);
+
+          ps.keywordSearch(
+            '맛집',
+            async (data, status) => {
+              if (status === window.kakao.maps.services.Status.OK) {
+                const sliced = data.slice(0, 6);
+
+                const mapped = await Promise.all(
+                  sliced.map(async (place, index) => {
+                    const crawledImage = await fetchPlaceImage(place.place_url);
+
+                    return {
+                      id: Number(place.id) || index + 1,
+                      name: place.place_name,
+                      img:
+                        crawledImage ||
+                        `https://picsum.photos/seed/${place.id || index}/800/500`,
+                      tags: [
+                        `#${place.category_group_name || '맛집'}`,
+                        `#${(
+                          place.road_address_name ||
+                          place.address_name ||
+                          '근처'
+                        )
+                          .split(' ')
+                          .slice(0, 2)
+                          .join('')}`,
+                      ],
+                      address: place.road_address_name || place.address_name,
+                      phone: place.phone,
+                      placeUrl: place.place_url,
+                      match: Math.max(80, 98 - index * 3),
+                    };
+                  }),
+                );
+
+                setNearbyRestaurants(mapped);
+              } else {
+                setNearbyRestaurants([]);
+              }
+
+              setIsNearbyLoading(false);
+            },
+            {
+              location: center,
+              radius: 2000,
+              size: 15,
+              sort: window.kakao.maps.services.SortBy.DISTANCE,
+            },
+          );
+        }
+      }, 300);
+    };
+
+    const fallbackSearch = () => {
+      waitForKakaoAndSearch(37.5665, 126.978);
+    };
+
+    if (!navigator.geolocation) {
+      fallbackSearch();
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        waitForKakaoAndSearch(
+          position.coords.latitude,
+          position.coords.longitude,
+        );
       },
-    ],
+      () => {
+        fallbackSearch();
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      },
+    );
+  }, [fetchPlaceImage]);
+>>>>>>> c278fb9df2eb3c37725e22bb490455ce4947fa76
+
+  const userProfile = {
+    nickname: '미식탐험가',
+    level: 'Expert',
   };
 
   const restaurants = [
@@ -109,24 +199,8 @@ const Dashboard = () => {
         <ProfileCard
           user={user}
           userProfile={userProfile}
-          chartData={chartData}
-          chartOptions={{
-            scales: {
-              r: {
-                angleLines: { display: false },
-                suggestedMin: 1,
-                suggestedMax: 5,
-                ticks: { display: false },
-                pointLabels: {
-                  font: { size: 10, weight: 'bold' },
-                  color: '#F05A28',
-                },
-              },
-            },
-            plugins: { legend: { display: false } },
-            responsive: true,
-            maintainAspectRatio: true,
-          }}
+          tasteProfile={tasteProfile}
+          onEditTasteProfile={() => navigate('/profile/taste')}
         />
 
         <section className="space-y-3 text-left">
