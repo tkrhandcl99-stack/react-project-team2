@@ -1,4 +1,5 @@
 import { Heart } from 'lucide-react';
+import { useYum } from '../../contexts/YumContext';
 
 const RestaurantList = ({
   restaurants,
@@ -8,6 +9,8 @@ const RestaurantList = ({
   isFavorite,
   navigate,
 }) => {
+  const { addToHistory } = useYum();
+
   const handleHeartClick = (e, restaurant) => {
     e.stopPropagation();
 
@@ -15,6 +18,15 @@ const RestaurantList = ({
       removeFavorite(restaurant.id);
     } else {
       addFavorite(restaurant);
+    }
+  };
+
+  const handleCardClick = (res) => {
+    // 마이다이닝 방문 기록에 추가
+    addToHistory(res);
+
+    if (res.placeUrl) {
+      window.open(res.placeUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -44,11 +56,7 @@ const RestaurantList = ({
           {restaurants.map((res) => (
             <div
               key={res.id}
-              onClick={() => {
-                if (res.placeUrl) {
-                  window.open(res.placeUrl, '_blank', 'noopener,noreferrer');
-                }
-              }}
+              onClick={() => handleCardClick(res)}
               className="cursor-pointer"
             >
               <div className="relative">
