@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 
+// Python Flask 서버 포트 5001로 직접 요청
 const usePlaceImage = () => {
   const fetchPlaceImage = useCallback(async (placeUrl) => {
     try {
@@ -7,7 +8,7 @@ const usePlaceImage = () => {
 
       const encodedUrl = encodeURIComponent(placeUrl);
       const response = await fetch(
-        `http://localhost:5000/api/get-image?url=${encodedUrl}`,
+        `http://localhost:5001/api/get-image?url=${encodedUrl}`,
       );
 
       if (!response.ok) {
