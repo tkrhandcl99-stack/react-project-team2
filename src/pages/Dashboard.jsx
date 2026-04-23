@@ -1,11 +1,6 @@
-<<<<<<< HEAD
-import React, { useState, useReducer, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChevronUp } from 'lucide-react';
-=======
-import React, { useEffect, Suspense, useState } from 'react';
+import React, { useState, useEffect, useReducer, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
->>>>>>> c278fb9df2eb3c37725e22bb490455ce4947fa76
+import { ChevronUp } from 'lucide-react';
 
 // 분리한 컴포넌트들 Import
 import Header from '../components/Dashboard/Header';
@@ -14,11 +9,14 @@ import RestaurantList from '../components/Dashboard/RestaurantList';
 import NavigationBar from '../components/Dashboard/NavigationBar';
 import KakaoMap from '../components/KakaoMap';
 import AiChatBot from '../components/AiChatBot';
+import FloatingActions from '../components/common/FloatingActions';
+import AiRecommendationPanel from '../components/Dashboard/AiRecommendationPanel';
 
 // Context & Chart Setting
 import { useAuth } from '../contexts/AuthContext';
 import { useYum } from '../contexts/YumContext';
-<<<<<<< HEAD
+import { useTasteProfile } from '../contexts/TasteProfileContext';
+import usePlaceImage from '../hooks/usePlaceImage';
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -36,19 +34,11 @@ ChartJS.register(
   Tooltip,
   Legend,
 );
-=======
-import { useTasteProfile } from '../contexts/TasteProfileContext';
-import usePlaceImage from '../hooks/usePlaceImage';
->>>>>>> c278fb9df2eb3c37725e22bb490455ce4947fa76
 
 const Dashboard = () => {
   const { user, loginWithGoogle, logout } = useAuth();
-<<<<<<< HEAD
   const navigate = useNavigate();
-  const { addFavorite, favorites } = useYum();
-  const [activeTab, setActiveTab] = useState('home');
-  const [mapKeyword, setMapKeyword] = useState('');
-=======
+  const location = useLocation();
   const { addFavorite, removeFavorite, favorites } = useYum();
   const { tasteProfile } = useTasteProfile();
   const { fetchPlaceImage } = usePlaceImage();
@@ -57,11 +47,11 @@ const Dashboard = () => {
   const [mapKeyword, setMapKeyword] = useState('');
   const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
   const [isNearbyLoading, setIsNearbyLoading] = useState(true);
+  const [currentLocation, setCurrentLocation] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const chatKeyword = params.get('chatKeyword');
-
     if (chatKeyword) {
       setMapKeyword(chatKeyword);
     }
@@ -89,6 +79,7 @@ const Dashboard = () => {
                     return {
                       id: Number(place.id) || index + 1,
                       name: place.place_name,
+                      category: place.category_group_name || '맛집',
                       img:
                         crawledImage ||
                         `https://picsum.photos/seed/${place.id || index}/800/500`,
@@ -107,6 +98,18 @@ const Dashboard = () => {
                       phone: place.phone,
                       placeUrl: place.place_url,
                       match: Math.max(80, 98 - index * 3),
+                      lat: Number(place.y),
+                      lng: Number(place.x),
+                      reviews: [
+                        {
+                          rating: 5,
+                          content: `${place.place_name}은 전체적으로 깔끔하고 무난하다는 평이 많아요.`,
+                        },
+                        {
+                          rating: 4,
+                          content: `${place.place_name}은 메뉴가 괜찮고 식감과 감칠맛이 좋다는 리뷰가 있습니다.`,
+                        },
+                      ],
                     };
                   }),
                 );
@@ -120,8 +123,8 @@ const Dashboard = () => {
             },
             {
               location: center,
-              radius: 2000,
-              size: 15,
+              radius: 5000,
+              size: 6,
               sort: window.kakao.maps.services.SortBy.DISTANCE,
             },
           );
@@ -130,7 +133,10 @@ const Dashboard = () => {
     };
 
     const fallbackSearch = () => {
-      waitForKakaoAndSearch(37.5665, 126.978);
+      const fallbackLat = 37.5665;
+      const fallbackLng = 126.978;
+      setCurrentLocation({ lat: fallbackLat, lng: fallbackLng });
+      waitForKakaoAndSearch(fallbackLat, fallbackLng);
     };
 
     if (!navigator.geolocation) {
@@ -140,13 +146,16 @@ const Dashboard = () => {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        waitForKakaoAndSearch(
-          position.coords.latitude,
-          position.coords.longitude,
-        );
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setCurrentLocation({ lat, lng });
+        waitForKakaoAndSearch(lat, lng);
       },
       () => {
-        fallbackSearch();
+        const fallbackLat = 37.5665;
+        const fallbackLng = 126.978;
+        setCurrentLocation({ lat: fallbackLat, lng: fallbackLng });
+        waitForKakaoAndSearch(fallbackLat, fallbackLng);
       },
       {
         enableHighAccuracy: true,
@@ -155,7 +164,6 @@ const Dashboard = () => {
       },
     );
   }, [fetchPlaceImage]);
->>>>>>> c278fb9df2eb3c37725e22bb490455ce4947fa76
 
   const userProfile = {
     nickname: '미식탐험가',
@@ -201,6 +209,11 @@ const Dashboard = () => {
           userProfile={userProfile}
           tasteProfile={tasteProfile}
           onEditTasteProfile={() => navigate('/profile/taste')}
+        />
+
+        <AiRecommendationPanel
+          nearbyRestaurants={nearbyRestaurants}
+          currentLocation={currentLocation}
         />
 
         <section className="space-y-3 text-left">
