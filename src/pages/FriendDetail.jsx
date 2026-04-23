@@ -1,0 +1,186 @@
+import React, { useMemo } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { ChevronLeft, Utensils, Quote, MessageCircle, ArrowUp } from 'lucide-react';
+import TasteRadar from '../components/common/TasteRadar';
+import NavigationBar from '../components/Dashboard/NavigationBar';
+
+const tagTranslation = {
+  'Umami Expert': '감칠맛 전문가',
+  'Spicy Hunter': '매운맛 사냥꾼',
+  'Sweet Tooth': '단맛 매니아',
+  'Pastry Critic': '디저트 비평가',
+  'Salty Snack Hero': '짠맛 히어로',
+  'Wine Taster': '와인 소믈리에',
+};
+
+const FriendDetail = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const friend = location.state?.friend;
+
+  // 최상단 이동 함수
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const { recommendedPlaces, tasteAnalysis } = useMemo(() => {
+    if (!friend || !friend.tasteProfile) return { recommendedPlaces: [], tasteAnalysis: "" };
+
+    const maxTaste = Object.keys(friend.tasteProfile).reduce((a, b) => 
+      friend.tasteProfile[a] > friend.tasteProfile[b] ? a : b
+    );
+
+    const tasteDatabase = {
+      spicy: {
+        recommended: [
+          { id: 101, name: '진진 마라탕', category: '중식', reason: '매운맛 사냥꾼들이 좋아할 화끈한 곳이에요.' },
+          { id: 102, name: '틈새라면', category: '분식', reason: '강렬한 맵기를 선호하는 분들께 추천합니다.' }
+        ],
+        analysis: "이 친구는 스트레스 풀리는 매운맛을 가장 즐겨요. 함께 땀 흘리며 스트레스 풀 준비 되셨나요?"
+      },
+      umami: {
+        recommended: [
+          { id: 103, name: '우와 오코노미야키', category: '일식', reason: '두 분 다 깊은 감칠맛을 선호하시네요!' },
+          { id: 104, name: '멘야하나비', category: '일식', reason: '풍부한 마제소바의 감칠맛을 느껴보세요.' }
+        ],
+        analysis: "깊고 진한 풍미를 중요하게 생각하는 미식가 친구예요. 재료 본연의 감칠맛이 살아있는 곳이 최고의 선택지!"
+      },
+      sweetness: {
+        recommended: [
+          { id: 105, name: '누데이크 성수', category: '디저트', reason: '달콤한 디저트 비평가들이 모이는 핫플입니다.' },
+          { id: 106, name: '올드페리도넛', category: '디저트', reason: '당 충전이 필요한 날 최적의 선택지예요.' }
+        ],
+        analysis: "달콤한 디저트에 진심인 친구예요. 밥 먹은 뒤 '디저트 배'가 따로 있는 분이라면 최고의 메이트!"
+      },
+      saltiness: {
+        recommended: [
+          { id: 107, name: '길버트 버거', category: '양식', reason: '정통 아메리칸 스타일의 짭짤함을 즐겨보세요.' },
+          { id: 108, name: '미즈컨테이너', category: '양식', reason: '짭짤한 치즈와 베이컨의 조화가 완벽합니다.' }
+        ],
+        analysis: "간이 확실하고 짭조름한 매력의 음식을 선호해요. 시원한 맥주 한 잔 곁들이기 좋은 맛을 좋아하네요."
+      },
+      texture: {
+        recommended: [
+          { id: 109, name: '을지로 촙촙', category: '아시안', reason: '다양한 식감과 감칠맛을 한 번에 잡은 곳입니다.' },
+          { id: 110, name: '성수 족발', category: '한식', reason: '쫀득하고 찰진 식감을 사랑하는 분들께 추천해요.' }
+        ],
+        analysis: "음식의 씹는 맛을 가장 중요하게 생각해요. 쫀득하거나 바삭한 식감이 살아있는 요리에 감동받는 편!"
+      }
+    };
+
+    const selectedData = tasteDatabase[maxTaste] || tasteDatabase.umami;
+    return {
+      recommendedPlaces: selectedData.recommended,
+      tasteAnalysis: selectedData.analysis
+    };
+  }, [friend]);
+
+  if (!friend) return <div className="p-10 text-center">정보를 불러올 수 없습니다.</div>;
+
+  return (
+    <div className="min-h-screen bg-[#f9f9f9] pb-32 relative">
+      {/* 🚀 콘텐츠 너비에 맞춘 상단 헤더 */}
+      <div className="fixed top-2 left-0 right-0 z-50 flex justify-center px-5">
+        <div className="w-full max-w-md h-14 bg-white/90 backdrop-blur-md shadow-lg shadow-slate-200/50 rounded-2xl flex items-center justify-between px-2 border border-gray-100">
+          <div className="w-10 flex justify-center">
+            <button 
+              onClick={() => navigate(-1)} 
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-slate-600"
+            >
+              <ChevronLeft size={22} />
+            </button>
+          </div>
+          <h1 className="text-[16px] font-bold text-slate-800">친구 프로필</h1>
+          <div className="w-10"></div>
+        </div>
+      </div>
+
+      <main className="max-w-md mx-auto pt-20 px-5 space-y-6">
+        {/* 1. 프로필 분석 섹션 */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center">
+          <div className="w-24 h-24 rounded-full border-4 border-[#ff5722] mb-4 overflow-hidden shadow-md">
+            <img 
+              src={friend.image} 
+              alt={friend.name} 
+              className="w-full h-full object-cover"
+              onError={(e) => { e.target.src = 'https://via.placeholder.com/150'; }} 
+            />
+          </div>
+          <h2 className="text-2xl font-bold">{friend.name}</h2>
+          <span className="text-[#ff5722] font-semibold text-sm mb-6">ID: {friend.userCode}</span>
+          
+          <div className="w-full py-6 bg-gray-50 rounded-3xl flex flex-col items-center">
+            <span className="text-[11px] font-bold text-slate-400 mb-4 tracking-widest">TASTE PALETTE</span>
+            <TasteRadar profile={friend.tasteProfile} size={220} />
+            <div className="flex flex-wrap justify-center gap-2 mt-6 px-4">
+              {friend.tags.map(tag => (
+                <span key={tag} className="px-3 py-1.5 bg-white border border-gray-100 text-[12px] font-bold rounded-full text-slate-600 shadow-sm">
+                  {tagTranslation[tag] || tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 2. 맛 취향 분석 코멘트 */}
+        <section className="bg-[#fff9f0] p-6 rounded-2xl border border-[#ffe9cc]">
+          <div className="flex items-center gap-2 mb-3">
+            <Quote size={18} className="text-[#ff5722] fill-[#ff5722]" />
+            <h3 className="font-bold text-slate-800">AI 맛 분석 코멘트</h3>
+          </div>
+          <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+            "{tasteAnalysis}"
+          </p>
+        </section>
+
+        {/* 3. 같이 가볼만한 곳 */}
+        <section className="space-y-4">
+          <h3 className="font-bold text-lg flex items-center gap-2 px-1">
+            🤝 <span className="text-[#ff5722]">{friend.name}</span> 님과 같이 가볼만한 곳
+          </h3>
+          <div className="grid gap-3">
+            {recommendedPlaces.map((place) => (
+              <div key={place.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-[#ff5722] transition-colors">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-orange-50 rounded-full flex items-center justify-center">
+                      <Utensils size={14} className="text-[#ff5722]" />
+                    </div>
+                    <span className="font-bold text-slate-800 text-md">{place.name}</span>
+                  </div>
+                  <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded-md text-slate-500 font-bold">{place.category}</span>
+                </div>
+                <p className="text-[13px] text-slate-500 leading-snug">{place.reason}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      {/* 🔘 플로팅 버튼 세트: 하단 바 위, 콘텐츠 박스 우측에 고정 */}
+      <div className="fixed bottom-0 left-0 right-0 pointer-events-none z-50 flex justify-center">
+        <div className="w-full max-w-md relative h-screen">
+          <div className="absolute bottom-24 right-5 flex flex-col gap-3 items-center pointer-events-auto">
+            {/* 탑 버튼 */}
+            <button 
+              onClick={scrollToTop}
+              className="w-10 h-10 bg-white border border-gray-100 rounded-full shadow-lg flex items-center justify-center text-slate-400 hover:text-[#ff5722] transition-colors"
+            >
+              <ArrowUp size={20} />
+            </button>
+
+            {/* 챗봇 버튼 */}
+            <button className="w-14 h-14 bg-[#ff5722] rounded-full shadow-xl shadow-orange-200 flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-all">
+              <MessageCircle size={28} fill="white" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <NavigationBar activeTab="friends" navigate={navigate} />
+    </div>
+  );
+};
+
+export default FriendDetail;
