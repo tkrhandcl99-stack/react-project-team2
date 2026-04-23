@@ -1,46 +1,12 @@
-import { useState, useEffect } from 'react';
-import { MessageCircle, Star, MessageSquare } from 'lucide-react';
+import { useState } from 'react';
+import { MessageCircle } from 'lucide-react';
 
 const AiChatBot = ({ onKeyword }) => {
+  // ✅ 부모(Dashboard)로부터 키워드 전달 함수 받음
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // KakaoMap에서 찾은 상세 정보를 저장하고 메시지에 반영하기 위한 효과
-  useEffect(() => {
-    const handlePlaceInfo = (e) => {
-      const { detailUrl, placeName, score, reviewCount } = e.detail;
-
-      setMessages((prev) => {
-        const lastMsg = prev[prev.length - 1];
-        if (lastMsg && lastMsg.role === 'ai') {
-          // 별점 정보 텍스트 구성
-          const scoreInfo = score
-            ? `\n\n⭐ 별점: ${score}점\n💬 리뷰: ${reviewCount}개`
-            : '';
-          const updatedText =
-            lastMsg.text.replace(
-              /https?:\/\/map\.kakao\.com\/link\/search\/[^\s]+/g,
-              detailUrl,
-            ) + scoreInfo;
-
-          const newMessages = [...prev];
-          newMessages[newMessages.length - 1] = {
-            ...lastMsg,
-            text: updatedText,
-            placeData: e.detail, // 장소 데이터를 따로 저장
-          };
-          return newMessages;
-        }
-        return prev;
-      });
-    };
-
-    window.addEventListener('placeDetailFound', handlePlaceInfo);
-    return () =>
-      window.removeEventListener('placeDetailFound', handlePlaceInfo);
-  }, []);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -52,24 +18,47 @@ const AiChatBot = ({ onKeyword }) => {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/chat', {
+      const res = await fetch('http://localhost:3001/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: currentInput }),
       });
+
       const data = await res.json();
 
-      setMessages((prev) => [...prev, { role: 'ai', text: data.message }]);
+      // ✅ 태환님의 키워드 감지 로직 이식
+      const keywords = [
+        '맛집',
+        '식당',
+        '음식',
+        '먹고싶',
+        '가고싶',
+        '추천',
+        '카페',
+        '국밥',
+        '치킨',
+        '파스타',
+        '초밥',
+      ];
+      const hasKeyword = keywords.some((k) => currentInput.includes(k));
 
-      if (data.kakaoUrl && onKeyword) {
-        onKeyword(currentInput);
+      if (hasKeyword && onKeyword) {
+        onKeyword(currentInput); // ✅ 대시보드 지도로 키워드 전달
       }
-    } catch (error) {
-      console.error('챗봇 에러:', error);
+
       setMessages((prev) => [
         ...prev,
-        { role: 'ai', text: '연결에 실패했습니다.' },
+        {
+          role: 'ai',
+          text: data.reply,
+          // 키워드가 있으면 카카오맵 링크 제공
+          mapUrl: hasKeyword
+            ? `https://map.kakao.com/?q=${encodeURIComponent(currentInput)}`
+            : null,
+        },
       ]);
+    } catch (error) {
+      console.error('챗봇 연결 실패:', error);
     } finally {
       setLoading(false);
     }
@@ -103,55 +92,13 @@ const AiChatBot = ({ onKeyword }) => {
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`px-4 py-2 rounded-2xl text-sm max-w-[90%] shadow-sm whitespace-pre-wrap break-all ${
+                  className={`px-4 py-2 rounded-2xl text-sm max-w-[85%] shadow-sm ${
                     msg.role === 'user'
                       ? 'bg-[#F05A28] text-white rounded-tr-none'
                       : 'bg-white text-slate-900 rounded-tl-none border border-slate-100'
                   }`}
                 >
-                  {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, index) => {
-                    if (part.match(/^https?:\/\/[^\s]+$/)) {
-                      return (
-                        <div
-                          key={index}
-                          className="mt-2 p-3 bg-orange-50 rounded-xl border border-orange-100"
-                        >
-                          {msg.placeData && (
-                            <div className="mb-2">
-                              <p className="font-bold text-slate-900 text-xs mb-1">
-                                {msg.placeData.placeName}
-                              </p>
-                              <div className="flex gap-3 text-[10px] text-slate-500">
-                                <span className="flex items-center gap-0.5">
-                                  <Star
-                                    size={10}
-                                    className="text-orange-400 fill-orange-400"
-                                  />{' '}
-                                  {msg.placeData.score || '평점없음'}
-                                </span>
-                                <span className="flex items-center gap-0.5">
-                                  <MessageSquare
-                                    size={10}
-                                    className="text-slate-400"
-                                  />{' '}
-                                  리뷰 {msg.placeData.reviewCount || 0}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                          <a
-                            href={part}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block text-center py-1.5 bg-[#F05A28] text-white rounded-lg font-bold text-[10px] hover:bg-orange-600 transition-colors"
-                          >
-                            상세 정보 및 리뷰 보기
-                          </a>
-                        </div>
-                      );
-                    }
-                    return part;
-                  })}
+                  {msg.text}
                 </div>
               </div>
             ))}
@@ -174,7 +121,7 @@ const AiChatBot = ({ onKeyword }) => {
             />
             <button
               onClick={sendMessage}
-              className="px-4 py-2 bg-[#F05A28] text-white rounded-full text-xs font-bold cursor-pointer"
+              className="px-4 py-2 bg-[#F05A28] text-white rounded-full text-xs font-bold cursor-pointer transition-colors hover:bg-orange-600"
             >
               전송
             </button>
