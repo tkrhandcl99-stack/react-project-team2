@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Edit2, Copy, Lock } from 'lucide-react'; 
+import { User, Edit2, Copy, Lock } from 'lucide-react';
 import TasteRadar from '../common/TasteRadar';
 
 const ProfileCard = ({
@@ -8,18 +8,17 @@ const ProfileCard = ({
   tasteProfile,
   onEditTasteProfile,
 }) => {
-  
-  // ✅ 태그별 상세 설명 데이터
+  // 태그별 툴팁 설명 (byj 추가)
   const tagDescriptions = {
     '#매운맛고수': '스트레스 풀리는 매운맛을 가장 즐겨요 🌶️',
     '#식감마스터': '꼬들함과 바삭함 등 입안의 즐거움을 찾아요 ✨',
     '#단짠천재': '멈출 수 없는 중독적인 단짠의 조화를 선호해요 🧂',
     '#달콤처돌이': '지친 하루를 달래줄 달콤한 디저트에 진심이에요 🍭',
     '#감칠맛박사': '재료 본연의 깊고 진한 풍미를 중요하게 생각해요 🍜',
-    '#미식가': '기미복이 인증하는 균형 잡힌 입맛의 소유자입니다'
+    '#미식가': '기미복이 인증하는 균형 잡힌 입맛의 소유자입니다',
   };
 
-  // ✅ 사용자의 tasteProfile 수치를 기반으로 #태그 생성
+  // tasteProfile 수치 기반 태그 생성 (byj 추가)
   const getTasteTags = (profile) => {
     if (!profile || !user) return [];
     const tags = [];
@@ -35,16 +34,15 @@ const ProfileCard = ({
 
   const handleCopyId = () => {
     if (!user) return;
-    const idToCopy = userProfile?.userCode || '';
-    navigator.clipboard.writeText(idToCopy).then(() => {
-      alert("복사가 완료되었습니다.");
+    navigator.clipboard.writeText(userProfile?.userCode || '').then(() => {
+      alert('복사가 완료되었습니다.');
     });
   };
 
   return (
     <section className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-50 transition-all">
       <div className="flex items-start gap-8">
-        {/* 좌측: 프로필 섹션 */}
+        {/* 좌측: 프로필 */}
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
             {user ? (
@@ -58,7 +56,6 @@ const ProfileCard = ({
                 <User size={48} />
               </div>
             )}
-            
             {user && (
               <button
                 onClick={onEditTasteProfile}
@@ -81,36 +78,40 @@ const ProfileCard = ({
             )}
 
             <h2 className="text-2xl font-black mt-2 text-slate-900 leading-tight">
-              {user ? user.displayName : "미식탐험가"}
+              {user ? user.displayName : '미식탐험가'}
             </h2>
 
-            {/* 고유 ID 및 아래 #태그 영역 */}
-            <div className={`mt-2 flex flex-col items-center gap-1 transition-all ${!user ? 'opacity-30 grayscale blur-[1px]' : ''}`}>
+            {/* 고유 ID + 태그 영역 */}
+            <div
+              className={`mt-2 flex flex-col items-center gap-1 transition-all ${!user ? 'opacity-30 grayscale blur-[1px]' : ''}`}
+            >
               <div className="flex items-center gap-1.5">
-                <span className="text-[9px] font-bold text-[#F05A28]/60 uppercase">ID:</span>
-                <span className="text-[11px] font-bold text-[#F05A28] tracking-tight">
-                  {user ? (userProfile?.userCode || 'WZ9S22EM') : '••••••••'}
+                <span className="text-[9px] font-bold text-[#F05A28]/60 uppercase">
+                  ID:
+                </span>
+                <span className="text-[11px] font-bold text-[#F05A28] tracking-tight font-mono">
+                  {user ? userProfile?.userCode || 'N/A' : '••••••••'}
                 </span>
                 {user && (
-                  <button onClick={handleCopyId} className="p-1 text-[#F05A28]/40 hover:text-[#F05A28]">
+                  <button
+                    onClick={handleCopyId}
+                    className="p-1 text-[#F05A28]/40 hover:text-[#F05A28] cursor-pointer"
+                  >
                     <Copy size={10} />
                   </button>
                 )}
               </div>
 
-              {/* ✅ [수정] 진한 주황색 + 마우스 오버 확대 및 툴팁 */}
+              {/* 태그 + 툴팁 (byj 추가) */}
               <div className="flex flex-wrap justify-center gap-2 mt-1.5">
                 {myTags.map((tag) => (
                   <div key={tag} className="group relative cursor-help">
                     <span className="text-[13px] font-black text-[#F05A28] transition-all duration-200 inline-block group-hover:scale-110 group-hover:drop-shadow-sm">
                       {tag}
                     </span>
-                    
-                    {/* 툴팁 설명창 */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 z-50 animate-in fade-in zoom-in duration-200">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 z-50">
                       <div className="bg-slate-800 text-white text-[10px] p-2.5 rounded-xl shadow-xl text-center leading-relaxed font-medium">
                         {tagDescriptions[tag]}
-                        {/* 화살표 */}
                         <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-800"></div>
                       </div>
                     </div>
@@ -121,7 +122,7 @@ const ProfileCard = ({
           </div>
         </div>
 
-        {/* 우측: 맛 프로필 섹션 */}
+        {/* 우측: Taste Profile */}
         <div className="flex-1 relative bg-[#fcfcfc] rounded-[32px] p-5 border border-gray-100/50">
           <div className="flex items-center mb-4">
             <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
@@ -130,11 +131,18 @@ const ProfileCard = ({
             </h3>
           </div>
 
+          <span className="absolute top-4 right-4 text-[9px] sm:text-[10px] font-medium text-[#F05A28] bg-orange-50 px-2 py-0.5 rounded-md z-10">
+            AI Analyzed
+          </span>
+
           <div className="relative w-full flex items-center justify-center">
             {!user && (
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/40 backdrop-blur-[3px] rounded-xl">
                 <Lock size={20} className="text-slate-400 mb-1" />
-                <span className="text-[9px] text-slate-500 font-medium text-center px-4">로그인 후<br/>확인 가능합니다</span>
+                <span className="text-[9px] text-slate-500 font-medium text-center px-4">
+                  로그인 후<br />
+                  확인 가능합니다
+                </span>
               </div>
             )}
             <div className={!user ? 'opacity-20 grayscale' : ''}>
