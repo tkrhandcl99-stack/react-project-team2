@@ -7,6 +7,7 @@ import RestaurantList from '../components/Dashboard/RestaurantList';
 import NavigationBar from '../components/Dashboard/NavigationBar';
 import KakaoMap from '../components/KakaoMap';
 import FloatingActions from '../components/common/FloatingActions';
+import AiRecommendationPanel from '../components/Dashboard/AiRecommendationPanel';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useYum } from '../contexts/YumContext';
@@ -25,22 +26,19 @@ const Dashboard = () => {
   const [mapKeyword, setMapKeyword] = useState('');
   const [nearbyRestaurants, setNearbyRestaurants] = useState([]);
   const [isNearbyLoading, setIsNearbyLoading] = useState(true);
+  const [currentLocation, setCurrentLocation] = useState(null);
 
-  // ✅ [수정] 사용자 프로필 데이터에 고유 아이디(userCode) 추가
-  // 실제 서비스 시에는 user 객체 내부의 고유 ID를 사용하게 됩니다.
+  // userProfile - userCode는 uid 앞 8자리 대문자
   const userProfile = {
     nickname: user?.displayName || '미식탐험가',
     level: 'Expert',
-    userCode: user?.uid?.slice(0, 8).toUpperCase() || 'GUEST_01', // UID 앞자리를 아이디로 활용 예시
+    userCode: user?.uid?.slice(0, 8).toUpperCase() || 'GUEST_01',
   };
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const chatKeyword = params.get('chatKeyword');
-
-    if (chatKeyword) {
-      setMapKeyword(chatKeyword);
-    }
+    if (chatKeyword) setMapKeyword(chatKeyword);
   }, [location.search]);
 
   useEffect(() => {
@@ -65,6 +63,7 @@ const Dashboard = () => {
                     return {
                       id: Number(place.id) || index + 1,
                       name: place.place_name,
+                      category: place.category_group_name || '맛집',
                       img:
                         crawledImage ||
                         `https://picsum.photos/seed/${place.id || index}/800/500`,
@@ -83,6 +82,18 @@ const Dashboard = () => {
                       phone: place.phone,
                       placeUrl: place.place_url,
                       match: Math.max(80, 98 - index * 3),
+                      lat: Number(place.y),
+                      lng: Number(place.x),
+                      reviews: [
+                        {
+                          rating: 5,
+                          content: `${place.place_name}은 전체적으로 깔끔하고 무난하다는 평이 많아요.`,
+                        },
+                        {
+                          rating: 4,
+                          content: `${place.place_name}은 메뉴가 괜찮고 식감과 감칠맛이 좋다는 리뷰가 있습니다.`,
+                        },
+                      ],
                     };
                   }),
                 );
@@ -91,13 +102,12 @@ const Dashboard = () => {
               } else {
                 setNearbyRestaurants([]);
               }
-
               setIsNearbyLoading(false);
             },
             {
               location: center,
-              radius: 2000,
-              size: 15,
+              radius: 5000,
+              size: 6,
               sort: window.kakao.maps.services.SortBy.DISTANCE,
             },
           );
@@ -106,7 +116,10 @@ const Dashboard = () => {
     };
 
     const fallbackSearch = () => {
-      waitForKakaoAndSearch(37.5665, 126.978);
+      const lat = 37.5665;
+      const lng = 126.978;
+      setCurrentLocation({ lat, lng });
+      waitForKakaoAndSearch(lat, lng);
     };
 
     if (!navigator.geolocation) {
@@ -116,19 +129,13 @@ const Dashboard = () => {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        waitForKakaoAndSearch(
-          position.coords.latitude,
-          position.coords.longitude,
-        );
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setCurrentLocation({ lat, lng });
+        waitForKakaoAndSearch(lat, lng);
       },
-      () => {
-        fallbackSearch();
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      },
+      () => fallbackSearch(),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
   }, [fetchPlaceImage]);
 
@@ -142,7 +149,6 @@ const Dashboard = () => {
       />
 
       <main className="max-w-md mx-auto p-4 pt-20 space-y-6">
-        {/* ✅ [수정] userProfile 객체를 통해 고유 아이디 전달 */}
         <ProfileCard
           user={user}
           userProfile={userProfile}
@@ -150,11 +156,15 @@ const Dashboard = () => {
           onEditTasteProfile={() => navigate('/profile/taste')}
         />
 
+        <AiRecommendationPanel
+          nearbyRestaurants={nearbyRestaurants}
+          currentLocation={currentLocation}
+        />
+
         <section className="space-y-3">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-lg font-bold">주변 맛집 지도</h3>
           </div>
-
           <div className="w-full h-80 rounded-3xl overflow-hidden shadow-sm border border-gray-100 relative">
             <Suspense
               fallback={
