@@ -4,10 +4,7 @@ const NavigationBar = ({ activeTab, setActiveTab, navigate }) => (
   <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-100 z-40">
     <div className="flex justify-around items-end px-2 pt-1.5 pb-4 max-w-md mx-auto">
       <button
-        onClick={() => {
-          setActiveTab('home');
-          navigate('/');
-        }}
+        onClick={() => setActiveTab('home')}
         className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
       >
         <Home
@@ -24,7 +21,6 @@ const NavigationBar = ({ activeTab, setActiveTab, navigate }) => (
           <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
         )}
       </button>
-
       <button
         onClick={() => {
           setActiveTab('save');
@@ -47,12 +43,8 @@ const NavigationBar = ({ activeTab, setActiveTab, navigate }) => (
           <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
         )}
       </button>
-
       <button
-        onClick={() => {
-          setActiveTab('mydining');
-          navigate('/mydining');
-        }}
+        onClick={() => setActiveTab('mydining')}
         className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
       >
         <MapPin
@@ -68,12 +60,8 @@ const NavigationBar = ({ activeTab, setActiveTab, navigate }) => (
           <div className="w-1 h-1 rounded-full bg-[#F05A28]" />
         )}
       </button>
-
       <button
-        onClick={() => {
-          setActiveTab('friends');
-          navigate('/friends');
-        }}
+        onClick={() => setActiveTab('friends')}
         className="flex flex-col items-center gap-1 px-4 pt-2 pb-1 min-w-[64px] cursor-pointer"
       >
         <User
