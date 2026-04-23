@@ -6,6 +6,10 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 
+from review_analyzer import analyze_review
+from recommender import aggregate_restaurant
+from sample_data import sample_restaurants
+
 app = Flask(__name__)
 CORS(app)
 
@@ -117,8 +121,6 @@ def score_image(img):
         pass
 
     area = width * height
-
-    # 큰 이미지 + 위쪽 + 왼쪽 이미지 우선
     score = area
     score += max(0, 3000 - (y * 3))
     score += max(0, 2000 - (x * 2))
@@ -167,6 +169,40 @@ def get_og_image(driver):
     return None
 
 
+def get_kakao_first_photo(driver):
+    """
+    카카오맵 장소 페이지 대표(첫 번째) 사진을 직접 셀렉터로 추출.
+    카카오맵은 동적 렌더링이므로 여러 셀렉터를 순서대로 시도.
+    """
+    selectors = [
+        "div.photo_area img",
+        "div.inner_photo img",
+        "div.bg_photo img",
+        "div.info_main img",
+        "div.wrap_photo img",
+        "div.thumb_g img",
+        "ul.list_photo li:first-child img",
+        "div.list_photo img",
+        "section img",
+    ]
+
+    for selector in selectors:
+        try:
+            result = driver.execute_script(f"""
+                const el = document.querySelector('{selector}');
+                if (!el) return null;
+                const src = el.currentSrc || el.src || el.getAttribute('data-src') || '';
+                return src || null;
+            """)
+            if result and not is_bad_image(result):
+                print(f"[셀렉터 성공] {selector} -> {result[:80]}")
+                return result
+        except Exception:
+            continue
+
+    return None
+
+
 def get_kakao_image(place_url):
     place_url = normalize_url(place_url)
     if not place_url:
@@ -178,13 +214,20 @@ def get_kakao_image(place_url):
         driver.get(place_url)
         time.sleep(4)
 
-        best_image = get_best_image_from_page(driver)
-        if best_image:
-            return best_image
+        # 1순위: 카카오맵 대표(첫 번째) 사진 직접 타겟팅
+        first_photo = get_kakao_first_photo(driver)
+        if first_photo:
+            return first_photo
 
+        # 2순위: og:image 메타태그
         og_image = get_og_image(driver)
         if og_image:
             return og_image
+
+        # 3순위: 페이지 전체에서 가장 큰 이미지 (기존 방식 fallback)
+        best_image = get_best_image_from_page(driver)
+        if best_image:
+            return best_image
 
         return None
 
@@ -196,9 +239,17 @@ def get_kakao_image(place_url):
         driver.quit()
 
 
-@app.route('/api/get-image', methods=['GET'])
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({
+        "ok": True,
+        "message": "python ai server running"
+    })
+
+
+@app.route("/api/get-image", methods=["GET"])
 def get_image():
-    url = request.args.get('url')
+    url = request.args.get("url")
     url = normalize_url(url)
 
     print(f"[요청] place url: {url}")
@@ -212,5 +263,81 @@ def get_image():
     })
 
 
-if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+@app.route("/api/analyze-review", methods=["POST"])
+def api_analyze_review():
+    data = request.get_json(silent=True) or {}
+
+    review = data.get("review", "")
+    rating = int(data.get("rating", 5))
+
+    result = analyze_review(review, rating)
+    return jsonify(result)
+
+
+@app.route("/api/analyze-restaurant", methods=["POST"])
+def api_analyze_restaurant():
+    data = request.get_json(silent=True) or {}
+
+    restaurant = data.get("restaurant")
+    user_profile = data.get("userProfile")
+
+    if not restaurant:
+        return jsonify({
+            "error": "restaurant 데이터가 필요합니다."
+        }), 400
+
+    result = aggregate_restaurant(restaurant, user_profile)
+    return jsonify(result)
+
+
+@app.route("/api/analyze-restaurants", methods=["POST"])
+def api_analyze_restaurants():
+    data = request.get_json(silent=True) or {}
+
+    restaurants = data.get("restaurants", [])
+    user_profile = data.get("userProfile")
+
+    if not restaurants:
+        return jsonify([])
+
+    analyzed = [
+        aggregate_restaurant(restaurant, user_profile)
+        for restaurant in restaurants
+    ]
+
+    analyzed.sort(
+        key=lambda x: (
+            x.get("matchScore", 0),
+            x["trustedAverageRating"],
+            x["averageTrustScore"],
+        ),
+        reverse=True,
+    )
+
+    return jsonify(analyzed)
+
+
+@app.route("/api/sample-restaurants", methods=["GET", "POST"])
+def api_sample_restaurants():
+    data = request.get_json(silent=True) or {}
+    user_profile = data.get("userProfile")
+
+    analyzed = [
+        aggregate_restaurant(restaurant, user_profile)
+        for restaurant in sample_restaurants
+    ]
+
+    analyzed.sort(
+        key=lambda x: (
+            x.get("matchScore", 0),
+            x["trustedAverageRating"],
+            x["averageTrustScore"],
+        ),
+        reverse=True,
+    )
+
+    return jsonify(analyzed)
+
+
+if __name__ == "__main__":
+    app.run(port=5001, debug=True)
