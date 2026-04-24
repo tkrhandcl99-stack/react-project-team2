@@ -1,7 +1,7 @@
 import { Home, LogOut } from 'lucide-react';
 import GimibokLogo from '../../assets/gimibok-logo.svg.webp';
 
-const Header = ({ user, loginWithGoogle, logout, navigate }) => (
+const Header = ({ user, logout, navigate }) => (
   <nav className="fixed top-4 left-0 right-0 z-50 flex justify-center pointer-events-none">
     <div className="w-full max-w-md mx-4 bg-white/95 backdrop-blur-xl border border-gray-100 rounded-2xl shadow-lg h-16 flex items-center px-4 relative pointer-events-auto">
       {/* 홈 버튼 */}
@@ -24,17 +24,15 @@ const Header = ({ user, loginWithGoogle, logout, navigate }) => (
         />
       </div>
 
-      {/* 로그인/유저 */}
+      {/* 유저 정보 / 로그아웃 */}
       <div className="absolute right-4 flex items-center">
         {user ? (
           <div className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">
-            <img
-              src={user.photoURL}
-              alt="profile"
-              className="w-6 h-6 rounded-full"
-            />
+            <div className="w-6 h-6 rounded-full bg-[#F05A28] flex items-center justify-center text-white text-[10px] font-black">
+              {user.name?.slice(0, 1)}
+            </div>
             <span className="text-[11px] font-bold text-slate-700">
-              {user.displayName}님
+              {user.name}님
             </span>
             <button
               onClick={logout}
@@ -45,7 +43,7 @@ const Header = ({ user, loginWithGoogle, logout, navigate }) => (
           </div>
         ) : (
           <button
-            onClick={loginWithGoogle}
+            onClick={() => navigate('/login')}
             className="bg-[#F05A28] text-white px-3 py-1 rounded-lg text-[11px] font-bold shadow-md shadow-orange-100 active:scale-95 transition-all whitespace-nowrap cursor-pointer"
           >
             로그인
