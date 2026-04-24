@@ -7,7 +7,7 @@ import FriendCard from '../components/Friends/FriendCard';
 import FloatingActions from '../components/common/FloatingActions';
 import { useAuth } from '../contexts/AuthContext';
 
-// ✅ 시스템 전체 사용자 데이터베이스
+// byj 버전으로 업데이트된 USER_POOL (이름 목록 변경 + 인원 추가)
 const USER_POOL = [
   {
     name: '김태환',
@@ -20,34 +20,54 @@ const USER_POOL = [
     image: 'https://i.pravatar.cc/150?u=2',
   },
   {
-    name: '복영재',
+    name: '이가인',
     userCode: 'WZ9S22EM',
     image: 'https://i.pravatar.cc/150?u=3',
   },
   {
-    name: '박지민',
+    name: '황용현',
     userCode: 'JIMIN_P',
     image: 'https://i.pravatar.cc/150?u=4',
   },
   {
-    name: '최유진',
+    name: '김지희',
     userCode: 'YUJIN_CHOI',
     image: 'https://i.pravatar.cc/150?u=5',
   },
   {
-    name: '정민수',
+    name: '전시현',
     userCode: 'MINSOO_K',
     image: 'https://i.pravatar.cc/150?u=6',
   },
   {
-    name: '한소희',
+    name: '권용익',
     userCode: 'SOHEE_H',
     image: 'https://i.pravatar.cc/150?u=7',
   },
   {
-    name: '강하늘',
+    name: '양정훈',
     userCode: 'SKY_KANG',
     image: 'https://i.pravatar.cc/150?u=8',
+  },
+  {
+    name: '윤승진',
+    userCode: 'SEOJUN_V',
+    image: 'https://i.pravatar.cc/150?u=9',
+  },
+  {
+    name: '이민주',
+    userCode: 'YURI_STORY',
+    image: 'https://i.pravatar.cc/150?u=10',
+  },
+  {
+    name: '임대한',
+    userCode: 'JIMIN_ALICE',
+    image: 'https://i.pravatar.cc/150?u=11',
+  },
+  {
+    name: '복영재',
+    userCode: 'WOOSUNG_W',
+    image: 'https://i.pravatar.cc/150?u=12',
   },
 ];
 
@@ -59,45 +79,28 @@ const Friends = () => {
   const [myFriends, setMyFriends] = useState([]);
   const inputRef = useRef(null);
 
-  // 1. 로그인한 유저의 UID 기반 고유 시드 생성 함수
-  const getSeedFromUid = (uid) => {
-    return uid.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  };
+  // byj: localStorage 기반 친구 저장 (사용자별 고유 키)
+  const storageKey = user ? `gimibok_friends_${user.uid}` : null;
 
-  // 2. 초기 고유 친구 목록 생성 로직 (첫 로그인 시 3명 자동 할당)
-  const generateFixedFriends = (uid) => {
-    const seed = getSeedFromUid(uid);
-    const shuffled = [...USER_POOL].sort((a, b) => {
-      const hashA = (getSeedFromUid(a.userCode) * seed) % 100;
-      const hashB = (getSeedFromUid(b.userCode) * seed) % 100;
-      return hashA - hashB;
-    });
+  // 로그인한 사용자의 친구 목록 불러오기
+  useEffect(() => {
+    if (storageKey) {
+      const saved = localStorage.getItem(storageKey);
+      setMyFriends(saved ? JSON.parse(saved) : []);
+    }
+  }, [storageKey]);
 
-    return shuffled.slice(0, 3).map((friend, index) => {
-      const tasteSeed = seed + index;
-      return {
-        ...friend,
-        id: `friend-${uid}-${index}`,
-        tasteProfile: {
-          spicy: (tasteSeed % 5) + 1,
-          texture: ((tasteSeed * 2) % 5) + 1,
-          saltiness: ((tasteSeed * 3) % 5) + 1,
-          sweetness: ((tasteSeed * 4) % 5) + 1,
-          umami: ((tasteSeed * 5) % 5) + 1,
-        },
-        tags: ['GIMIBOK 인증', '미식 메이트'],
-      };
-    });
-  };
+  // 친구 목록 변경 시 저장
+  useEffect(() => {
+    if (storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(myFriends));
+    }
+  }, [myFriends, storageKey]);
 
   useEffect(() => {
-    if (user) {
-      setMyFriends(generateFixedFriends(user.uid));
-      if (inputRef.current) inputRef.current.focus();
-    }
+    if (user && inputRef.current) inputRef.current.focus();
   }, [user]);
 
-  // ✅ 3. [핵심] 친구 추가 기능 (ID 또는 닉네임 검색)
   const handleAddFriendById = () => {
     const target = query.trim().toUpperCase();
     if (!target) {
@@ -105,7 +108,6 @@ const Friends = () => {
       return;
     }
 
-    // USER_POOL에서 검색
     const foundUser = USER_POOL.find(
       (u) => u.userCode.toUpperCase() === target || u.name === target,
     );
@@ -115,13 +117,11 @@ const Friends = () => {
       return;
     }
 
-    // 중복 추가 방지
     if (myFriends.some((f) => f.userCode === foundUser.userCode)) {
       alert('이미 추가된 친구입니다.');
       return;
     }
 
-    // 친구 목록에 추가 (맛 데이터는 랜덤 생성)
     const newFriend = {
       ...foundUser,
       id: `manual-${Date.now()}`,
@@ -132,7 +132,7 @@ const Friends = () => {
         sweetness: Math.floor(Math.random() * 5) + 1,
         umami: Math.floor(Math.random() * 5) + 1,
       },
-      tags: ['새로 추가됨'],
+      tags: ['새로운 메이트'],
     };
 
     setMyFriends((prev) => [newFriend, ...prev]);
@@ -140,20 +140,19 @@ const Friends = () => {
     alert(`${foundUser.name} 님이 친구 목록에 추가되었습니다!`);
   };
 
-  // 내 친구 목록 내에서 실시간 검색 필터
   const filteredFriends = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return myFriends;
     return myFriends.filter(
-      (friend) =>
-        friend.name.toLowerCase().includes(q) ||
-        friend.userCode?.toLowerCase().includes(q),
+      (f) =>
+        f.name.toLowerCase().includes(q) ||
+        f.userCode?.toLowerCase().includes(q),
     );
   }, [myFriends, query]);
 
   const handleDelete = (friendId) => {
     if (window.confirm('정말 삭제하시겠습니까?')) {
-      setMyFriends((prev) => prev.filter((friend) => friend.id !== friendId));
+      setMyFriends((prev) => prev.filter((f) => f.id !== friendId));
     }
   };
 
@@ -216,7 +215,7 @@ const Friends = () => {
                   placeholder="ID 또는 닉네임 입력..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddFriendById()} // 엔터키 지원
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddFriendById()}
                   className="w-full h-12 pl-11 pr-4 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#ff5722] outline-none transition-all shadow-sm"
                 />
               </div>

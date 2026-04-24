@@ -2,76 +2,95 @@ import React from 'react';
 import { Trash2 } from 'lucide-react';
 import TasteRadar from '../common/TasteRadar';
 
-// 영문 태그를 한글로 변환해주는 매핑 객체
-const tagTranslation = {
-  'Umami Expert': '감칠맛 전문가',
-  'Spicy Hunter': '매운맛 사냥꾼',
-  'Sweet Tooth': '단맛 매니아',
-  'Pastry Critic': '디저트 비평가',
-  'Salty Snack Hero': '짠맛 히어로',
-  'Wine Taster': '와인 소믈리에',
-};
-
 const FriendCard = ({ friend, onDelete, onViewProfile }) => {
+  const tagDescriptions = {
+    '#매운맛 고수 🌶️': '스트레스 풀리는 매운맛을 가장 즐겨요 🌶️',
+    '#식감 마스터 ✨': '꼬들함과 바삭함 등 입안의 즐거움을 찾아요 ✨',
+    '#단짠 천재 🧂': '멈출 수 없는 중독적인 단짠의 조화를 선호해요 🧂',
+    '#달콤 처돌이 🍭': '지친 하루를 달래줄 달콤한 디저트에 진심이에요 🍭',
+    '#감칠맛 박사 🍜': '재료 본연의 깊고 진한 풍미를 중요하게 생각해요 🍜',
+    '#미식 탐험가': '기미복이 인증하는 균형 잡힌 입맛의 소유자입니다',
+    '새로운 메이트': '새롭게 추가된 친구입니다!',
+    'GIMIBOK 인증': '기미복이 인증하는 균형 잡힌 입맛의 소유자입니다',
+    '미식 메이트': '함께 맛집을 탐험할 미식 파트너입니다',
+  };
+
+  // tasteProfile 수치 기반 동적 태그 생성
+  const getDynamicTasteTags = (profile) => {
+    if (!profile) return ['#미식 탐험가'];
+    const tags = [];
+    if (profile.spicy >= 4) tags.push('#매운맛 고수 🌶️');
+    if (profile.texture >= 4) tags.push('#식감 마스터 ✨');
+    if (profile.saltiness >= 4) tags.push('#단짠 천재 🧂');
+    if (profile.sweetness >= 4) tags.push('#달콤 처돌이 🍭');
+    if (profile.umami >= 4) tags.push('#감칠맛 박사 🍜');
+    return tags.length > 0 ? tags : ['#미식 탐험가'];
+  };
+
+  const dynamicTags = getDynamicTasteTags(friend.tasteProfile);
+
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-200 flex flex-col gap-4">
-      {/* 1. 상단 프로필 정보 (ID만 남기고 골뱅이 제거) */}
+    <div className="bg-white rounded-[32px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col gap-4 relative overflow-hidden">
+      {/* 1. 상단 프로필 */}
       <div className="flex items-center gap-4">
         <img
           src={friend.image}
           alt={friend.name}
-          className="w-16 h-16 rounded-full object-cover border-2 border-[#ff5722]"
+          className="w-16 h-16 rounded-2xl object-cover border-2 border-orange-50"
         />
         <div>
           <h3 className="text-lg font-bold text-slate-900">{friend.name}</h3>
-          <div className="flex flex-col">
-            {/* 고유 ID 표시 (기존의 @ 표시 부분 삭제) */}
-            <span className="text-xs text-[#ff5722] font-bold">
-              ID: {friend.userCode}
-            </span>
-          </div>
+          <span className="text-xs text-[#ff5722] font-bold uppercase">
+            ID: {friend.userCode}
+          </span>
         </div>
       </div>
 
-      {/* 2. 중앙 맛 팔레트 (글씨가 보이도록 showLabels 수정) */}
-      <div className="flex flex-col items-center py-5 bg-gray-50 rounded-xl">
-        <span className="text-[12px] tracking-wide font-bold text-slate-400 mb-4">
-          맛 팔레트
+      {/* 2. 맛 팔레트 */}
+      <div className="flex flex-col items-center py-6 bg-[#fcfcfc] rounded-[24px]">
+        <span className="text-[10px] tracking-widest font-bold text-slate-300 mb-4 uppercase">
+          Taste Palette
         </span>
-
-        {/* showLabels를 true로 변경하고, 
-          글자가 잘리지 않도록 size를 소폭 조정했습니다.
-        */}
         <TasteRadar
           profile={friend.tasteProfile}
           size={180}
           showLabels={true}
         />
 
-        <div className="flex flex-wrap justify-center gap-2 mt-4 px-2">
-          {friend.tags.map((tag) => (
-            <span
-              key={tag}
-              className="px-2 py-1 bg-white border border-gray-200 text-[11px] font-medium rounded-full text-slate-600 shadow-sm"
-            >
-              {tagTranslation[tag] || tag}
-            </span>
-          ))}
+        {/* 동적 태그 + 툴팁 */}
+        <div className="flex flex-wrap justify-center gap-2 mt-5 px-2">
+          {dynamicTags.map((tag, index) => {
+            const cleanTag = tag.replace('#', '').trim();
+            return (
+              <div key={index} className="group relative cursor-help">
+                <span className="px-1 py-0.5 text-[12px] font-black text-[#F05A28] transition-all duration-200 inline-block group-hover:scale-110">
+                  {tag}
+                </span>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-40 z-50">
+                  <div className="bg-slate-800 text-white text-[9px] p-2 rounded-xl shadow-xl text-center leading-relaxed font-medium">
+                    {tagDescriptions[tag] ||
+                      tagDescriptions[cleanTag] ||
+                      '기미복 유저입니다'}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* 3. 하단 버튼 섹션 */}
-      <div className="flex gap-2 mt-auto">
+      {/* 3. 버튼 */}
+      <div className="flex gap-2 mt-2">
         <button
           onClick={() => onViewProfile(friend)}
-          className="flex-1 h-12 bg-[#ff5722] text-white text-sm font-bold rounded-xl shadow-sm 
-                   cursor-pointer hover:scale-105 active:scale-95 transition-all duration-200"
+          className="flex-1 h-12 bg-[#ff5722] text-white text-sm font-bold rounded-2xl shadow-md shadow-orange-100 cursor-pointer active:scale-95 transition-all duration-200"
         >
           프로필 보기
         </button>
         <button
           onClick={() => onDelete(friend.id)}
-          className="w-10 h-10 flex items-center justify-center border border-gray-200 text-slate-400 hover:text-red-500 hover:bg-red-50 active:scale-95 transition-all rounded-full"
+          className="w-12 h-12 flex items-center justify-center bg-slate-50 text-slate-300 hover:text-red-500 hover:bg-red-50 active:scale-95 transition-all rounded-2xl"
         >
           <Trash2 size={18} />
         </button>
