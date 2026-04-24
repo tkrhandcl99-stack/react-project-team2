@@ -77,7 +77,7 @@ const ProfileCard = ({
               </span>
             )}
 
-            <h2 className="text-2xl font-black mt-2 text-slate-900 leading-tight">
+            <h2 className="text-lg font-black mt-2 text-slate-900 leading-tight whitespace-nowrap">
               {user ? user.displayName : '미식탐험가'}
             </h2>
 
