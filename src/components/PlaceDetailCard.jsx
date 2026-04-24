@@ -1,11 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Phone } from 'lucide-react';
+import { useYum } from '../contexts/YumContext';
+import { crawlAndAnalyze } from '../api/ai';
+import { useTasteProfile } from '../contexts/TasteProfileContext';
 
 const PlaceDetailCard = ({ place, onClose }) => {
+  const { addToHistory } = useYum();
+  const { tasteProfile } = useTasteProfile();
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
   if (!place) return null;
 
-  const handleDetailClick = (e) => {
+  const handleDetailClick = async (e) => {
     e.stopPropagation();
+
+    try {
+      setIsAnalyzing(true);
+      // 카카오맵 실제 리뷰 크롤링 후 신뢰도 분석
+      const result = await crawlAndAnalyze(
+        place.place_url,
+        place.place_name,
+        place.category_group_name || '맛집',
+        tasteProfile,
+      );
+      trustedRating = result?.trustedAverageRating ?? null;
+    } catch (err) {
+      console.error('AI 분석 실패:', err);
+    } finally {
+      setIsAnalyzing(false);
+    }
+
+    // 마이다이닝 방문 기록에 추가 (trustedRating 포함)
+    addToHistory({
+      ...place,
+      imageUrl: place.imageUrl || null,
+      trustedRating,
+    });
 
     if (place.place_url) {
       window.open(place.place_url, '_blank', 'noopener,noreferrer');
@@ -58,9 +88,10 @@ const PlaceDetailCard = ({ place, onClose }) => {
 
       <button
         onClick={handleDetailClick}
-        className="absolute bottom-3 right-3 bg-[#F05A28] text-white text-xs font-bold px-3 py-2 rounded-xl hover:bg-orange-600 active:scale-95 transition-all cursor-pointer"
+        disabled={isAnalyzing}
+        className="absolute bottom-3 right-3 bg-[#F05A28] text-white text-xs font-bold px-3 py-2 rounded-xl hover:bg-orange-600 active:scale-95 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        상세보기
+        {isAnalyzing ? '분석중...' : '상세보기'}
       </button>
     </div>
   );

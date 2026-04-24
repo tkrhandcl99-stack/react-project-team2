@@ -1,4 +1,4 @@
-import { Heart } from 'lucide-react';
+import { Heart, Star } from 'lucide-react';
 import { useYum } from '../../contexts/YumContext';
 
 const RestaurantList = ({
@@ -13,7 +13,6 @@ const RestaurantList = ({
 
   const handleHeartClick = (e, restaurant) => {
     e.stopPropagation();
-
     if (isFavorite(restaurant.id)) {
       removeFavorite(restaurant.id);
     } else {
@@ -22,9 +21,7 @@ const RestaurantList = ({
   };
 
   const handleCardClick = (res) => {
-    // 마이다이닝 방문 기록에 추가
     addToHistory(res);
-
     if (res.placeUrl) {
       window.open(res.placeUrl, '_blank', 'noopener,noreferrer');
     }
@@ -65,28 +62,53 @@ const RestaurantList = ({
                   alt={res.name}
                   className="w-full h-56 object-cover rounded-[28px] shadow-sm"
                 />
-
-                <div className="absolute top-5 left-4 bg-[#F05A28] text-white text-sm font-black px-4 py-2 rounded-2xl shadow-md">
-                  {res.match}% MATCH
-                </div>
               </div>
 
               <div className="mt-4 flex items-start justify-between gap-3">
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <h4 className="text-[22px] font-black text-slate-900 truncate">
                     {res.name}
                   </h4>
 
-                  <div className="mt-3 flex flex-wrap gap-3 text-sm text-slate-400 font-medium">
-                    {res.tags?.map((tag) => (
-                      <span key={tag}>{tag}</span>
-                    ))}
+                  <div className="mt-2 flex items-center gap-3 flex-wrap">
+                    {/* 신뢰 반영 평점 - AI 분석 완료 후 표시 */}
+                    {res.trustedRating != null ? (
+                      <div className="flex items-center gap-1 bg-orange-50 px-2.5 py-1 rounded-full">
+                        <Star
+                          size={12}
+                          className="text-[#F05A28] fill-[#F05A28]"
+                        />
+                        <span className="text-xs font-black text-[#F05A28]">
+                          {res.trustedRating.toFixed(1)}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          신뢰반영
+                        </span>
+                      </div>
+                    ) : (
+                      // 분석 전 로딩 스켈레톤
+                      <div className="flex items-center gap-1 bg-gray-100 px-2.5 py-1 rounded-full animate-pulse">
+                        <Star
+                          size={12}
+                          className="text-gray-300 fill-gray-300"
+                        />
+                        <span className="text-xs font-black text-gray-300">
+                          -.-
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap gap-2 text-sm text-slate-400 font-medium">
+                      {res.tags?.map((tag) => (
+                        <span key={tag}>{tag}</span>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
                 <button
                   onClick={(e) => handleHeartClick(e, res)}
-                  className="pt-1 pr-1 cursor-pointer"
+                  className="pt-1 pr-1 cursor-pointer flex-shrink-0"
                 >
                   <Heart
                     size={28}

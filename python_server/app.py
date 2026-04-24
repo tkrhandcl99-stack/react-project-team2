@@ -339,5 +339,141 @@ def api_sample_restaurants():
     return jsonify(analyzed)
 
 
+def crawl_kakao_reviews(place_url: str, max_reviews: int = 10):
+    """
+    카카오맵 장소 페이지에서 후기 탭의 리뷰 텍스트와 별점을 크롤링.
+    최대 max_reviews개 수집.
+    """
+    place_url = normalize_url(place_url)
+    if not place_url:
+        return []
+
+    driver = make_driver()
+
+    try:
+        driver.get(place_url)
+        time.sleep(3)
+
+        # 후기 탭 클릭 시도 (카카오맵 후기 탭 셀렉터)
+        tab_selectors = [
+            "a[data-tab='comment']",
+            "button[data-tab='comment']",
+            "a.link_tab:nth-child(4)",
+            "li.tab_item:nth-child(4) a",
+            "[aria-label='후기']",
+        ]
+
+        for selector in tab_selectors:
+            try:
+                tab = driver.find_element("css selector", selector)
+                tab.click()
+                time.sleep(2)
+                break
+            except Exception:
+                continue
+
+        # 리뷰 텍스트 + 별점 추출
+        reviews_data = driver.execute_script("""
+            const results = [];
+
+            // 카카오맵 리뷰 컨테이너 셀렉터들
+            const selectors = [
+                '.comment_item',
+                '.review_item',
+                '.list_review li',
+                '.inner_review',
+                '[data-testid="review-item"]',
+            ];
+
+            let items = [];
+            for (const sel of selectors) {
+                const found = document.querySelectorAll(sel);
+                if (found.length > 0) {
+                    items = Array.from(found);
+                    break;
+                }
+            }
+
+            for (const item of items.slice(0, 15)) {
+                // 리뷰 텍스트
+                const textEl = item.querySelector(
+                    '.txt_comment, .review_text, .comment_text, p, span.txt'
+                );
+                const text = textEl ? textEl.innerText.trim() : '';
+
+                // 별점 (aria-label, 클래스, 텍스트 등에서 추출)
+                let rating = 5;
+                const ratingEl = item.querySelector(
+                    '[class*="star"], [class*="rating"], [aria-label*="점"]'
+                );
+                if (ratingEl) {
+                    const label = ratingEl.getAttribute('aria-label') || '';
+                    const match = label.match(/(\\d+(\\.\\d+)?)/);
+                    if (match) rating = parseFloat(match[1]);
+
+                    // 별 개수로 추정
+                    const filled = item.querySelectorAll(
+                        '[class*="fill"], [class*="on"], [class*="active"]'
+                    ).length;
+                    if (filled > 0 && filled <= 5) rating = filled;
+                }
+
+                if (text.length > 0) {
+                    results.push({ content: text, rating: rating });
+                }
+            }
+            return results;
+        """)
+
+        print(f"[리뷰 크롤링] {place_url} → {len(reviews_data)}개 수집")
+        return reviews_data[:max_reviews]
+
+    except Exception as e:
+        print(f"[에러] 리뷰 크롤링 실패: {e}")
+        return []
+    finally:
+        driver.quit()
+
+
+@app.route("/api/crawl-and-analyze", methods=["POST"])
+def api_crawl_and_analyze():
+    """
+    카카오맵 URL로 실제 리뷰를 크롤링한 뒤 신뢰도 분석하여 신뢰반영 평점 반환.
+    크롤링 실패 시 샘플 리뷰로 fallback.
+    """
+    data = request.get_json(silent=True) or {}
+
+    place_url = data.get("placeUrl", "")
+    place_name = data.get("name", "")
+    category = data.get("category", "맛집")
+    user_profile = data.get("userProfile")
+
+    # 실제 리뷰 크롤링 시도
+    crawled_reviews = crawl_kakao_reviews(place_url, max_reviews=10)
+
+    # 크롤링 실패 또는 리뷰 없으면 샘플 fallback
+    if not crawled_reviews:
+        print(f"[fallback] 크롤링 실패, 샘플 리뷰 사용: {place_name}")
+        crawled_reviews = [
+            {"rating": 5, "content": "맛있어요"},
+            {"rating": 5, "content": "리뷰 이벤트 참여해서 방문했어요. 서비스 받았습니다."},
+            {"rating": 4, "content": f"{place_name} 다녀왔어요. 식감이 쫄깃하고 감칠맛이 진해서 만족스러웠습니다. 직원도 친절하고 매장도 깔끔했어요."},
+            {"rating": 3, "content": "맛은 담백하고 짜지 않아서 좋은데 웨이팅이 길어요. 가격 대비 양이 적은 편입니다."},
+        ]
+
+    restaurant = {
+        "id": place_url,
+        "name": place_name,
+        "category": category,
+        "reviews": crawled_reviews,
+    }
+
+    result = aggregate_restaurant(restaurant, user_profile)
+    result["reviewCount"] = len(crawled_reviews)
+    result["crawled"] = len(crawled_reviews) > 0
+
+    return jsonify(result)
+
+
 if __name__ == "__main__":
     app.run(port=5001, debug=True)

@@ -74,9 +74,22 @@ const Favorites = () => {
                     </p>
                   </div>
 
-                  <div className="bg-gray-100 rounded-full px-4 py-2 flex items-center gap-1">
+                  <div className="bg-orange-50 rounded-full px-4 py-2 flex items-center gap-1">
                     <Star size={16} className="text-[#F05A28] fill-[#F05A28]" />
-                    <span className="font-bold text-slate-900">4.9</span>
+                    {item.trustedRating != null ? (
+                      <div className="flex flex-col items-center">
+                        <span className="font-black text-[#F05A28] text-sm leading-none">
+                          {item.trustedRating.toFixed(1)}
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-medium leading-none mt-0.5">
+                          신뢰반영
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="font-bold text-slate-400 text-sm">
+                        -.-
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

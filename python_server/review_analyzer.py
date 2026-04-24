@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeou
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3"
 
-# Ollama 사용 여부 (True: AI분석 시도 후 rule-based fallback / False: rule-based만 사용)
+# Ollama 사용 여부
 USE_OLLAMA = False
 
 EVENT_PATTERNS = [
@@ -16,14 +16,26 @@ EVENT_PATTERNS = [
     r"이벤트\s*참여",
     r"체험단",
     r"협찬",
+    r"영수증\s*리뷰",
+    r"포인트\s*적립",
+    r"방문\s*인증",
 ]
 
+# 정보가 없는 짧고 단순한 리뷰 패턴
 LOW_INFO_PATTERNS = [
-    r"맛있어요$",
-    r"좋아요$",
-    r"굿$",
-    r"추천$",
-    r"최고예요$",
+    r"^맛있어요\.?$",
+    r"^좋아요\.?$",
+    r"^굿\.?$",
+    r"^추천\.?$",
+    r"^최고예요\.?$",
+    r"^맛있습니다\.?$",
+    r"^또 올게요\.?$",
+    r"^강추\.?$",
+    r"^완전 맛있어요\.?$",
+    r"^맛집이에요\.?$",
+    r"^맛있어요\s*맛있어요",
+    r"^👍+$",
+    r"^[ㅎㅋ😊👍⭐]+$",
 ]
 
 SPICY_WORDS = ["맵", "매콤", "얼큰", "칼칼", "자극적"]
@@ -90,50 +102,71 @@ def analyze_review_rule_based(review: str, rating: int):
     trust_score = 50
     flags = []
 
+    # ① 리뷰 길이 기반 점수
     if len(text) < 6:
-        trust_score -= 30
+        trust_score -= 35
         flags.append("too_short")
     elif len(text) < 15:
-        trust_score -= 15
-        flags.append("short_review")
-    elif len(text) >= 30:
-        trust_score += 10
-
-    if any(re.search(pattern, text) for pattern in EVENT_PATTERNS):
-        trust_score -= 30
-        flags.append("event_review_suspected")
-
-    if any(re.search(pattern, text) for pattern in LOW_INFO_PATTERNS):
         trust_score -= 20
-        flags.append("low_information")
-
-    if contains_any(text, SPICY_WORDS + TEXTURE_WORDS + SALTY_WORDS + SWEET_WORDS + UMAMI_WORDS):
-        trust_score += 15
-
-    if contains_any(text, SERVICE_WORDS):
+        flags.append("short_review")
+    elif len(text) >= 50:
+        trust_score += 15  # 충분히 긴 리뷰는 더 신뢰
+    elif len(text) >= 30:
         trust_score += 8
 
+    # ② 이벤트성 리뷰 감지 → 강하게 감점
+    if any(re.search(pattern, text) for pattern in EVENT_PATTERNS):
+        trust_score -= 40
+        flags.append("event_review_suspected")
+
+    # ③ 정보없는 단순 리뷰 → 감점
+    if any(re.search(pattern, text) for pattern in LOW_INFO_PATTERNS):
+        trust_score -= 25
+        flags.append("low_information")
+
+    # ④ 별점 5점 + 짧은 리뷰 조합 → 의심
+    if rating == 5 and len(text) < 15:
+        trust_score -= 20
+        flags.append("high_rating_low_detail")
+
+    # ⑤ 별점 5점 + 이벤트 패턴 → 매우 강하게 의심
+    if rating == 5 and any(re.search(pattern, text) for pattern in EVENT_PATTERNS):
+        trust_score -= 20
+        flags.append("suspicious_perfect_score")
+
+    # ⑥ 구체적인 맛 언급 → 신뢰 상승
+    taste_mentioned = contains_any(text, SPICY_WORDS + TEXTURE_WORDS + SALTY_WORDS + SWEET_WORDS + UMAMI_WORDS)
+    if taste_mentioned:
+        trust_score += 15
+
+    # ⑦ 서비스, 위생, 웨이팅 언급 → 신뢰 상승
+    if contains_any(text, SERVICE_WORDS):
+        trust_score += 8
     if contains_any(text, WAITING_WORDS + HYGIENE_WORDS):
         trust_score += 8
 
-    if rating == 5 and len(text) < 10:
-        trust_score -= 15
-        flags.append("high_rating_low_detail")
+    # ⑧ 부정적 경험 구체 언급 → 신뢰 상승 (나쁜 리뷰도 신뢰할 수 있음)
+    negative_words = ["별로", "실망", "맛없", "노맛", "눅눅", "비쌈", "불친절", "더럽", "위생 별로"]
+    if contains_any(text, negative_words) and len(text) >= 20:
+        trust_score += 10
+        flags.append("detailed_negative")
 
     trust_score = max(0, min(100, trust_score))
 
     taste_profile = extract_taste_profile_rule_based(text)
 
-    if trust_score >= 75:
+    if trust_score >= 70:
         trust_label = "high"
-    elif trust_score >= 45:
+    elif trust_score >= 40:
         trust_label = "medium"
     else:
         trust_label = "low"
 
-    summary = "정보가 충분한 리뷰입니다." if trust_label == "high" else \
-              "일부 정보는 있으나 신뢰도는 보통입니다." if trust_label == "medium" else \
-              "정보량이 적거나 이벤트성일 수 있는 리뷰입니다."
+    summary = (
+        "구체적인 정보가 담긴 신뢰할 수 있는 리뷰입니다." if trust_label == "high" else
+        "일부 정보는 있으나 신뢰도는 보통입니다." if trust_label == "medium" else
+        "정보가 부족하거나 이벤트성으로 의심되는 리뷰입니다."
+    )
 
     return {
         "trustScore": trust_score,
@@ -153,7 +186,7 @@ def analyze_review_with_ollama(review: str, rating: int):
 {{
   "trustScore": 0~100 정수,
   "trustLabel": "high" 또는 "medium" 또는 "low",
-  "flags": ["문자열", "문자열"],
+  "flags": ["문자열"],
   "tasteProfile": {{
     "spicy": 1~5 정수,
     "texture": 1~5 정수,
@@ -166,8 +199,8 @@ def analyze_review_with_ollama(review: str, rating: int):
 
 분석 기준:
 - 리뷰 이벤트, 서비스 제공 언급, 과도하게 짧은 리뷰는 신뢰도 낮춤
-- 메뉴, 맛, 식감, 서비스, 웨이팅, 위생 등 구체성이 높으면 신뢰도 높임
-- tasteProfile은 리뷰 내용만 보고 추정
+- 별점 5점 + 짧은 리뷰 조합은 의심
+- 맛, 식감, 서비스, 웨이팅, 위생 등 구체성이 높으면 신뢰도 높임
 
 별점: {rating}
 리뷰: {review}
@@ -175,28 +208,17 @@ def analyze_review_with_ollama(review: str, rating: int):
 
     response = requests.post(
         OLLAMA_URL,
-        json={
-            "model": OLLAMA_MODEL,
-            "prompt": prompt,
-            "stream": False,
-            "format": "json",
-        },
-        timeout=15,  # 60초 → 15초로 단축
+        json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False, "format": "json"},
+        timeout=15,
     )
     response.raise_for_status()
-
-    raw = response.json()["response"]
-    parsed = json.loads(raw)
-
+    parsed = json.loads(response.json()["response"])
     parsed["source"] = "ollama"
     return parsed
 
 def analyze_review(review: str, rating: int):
-    # USE_OLLAMA=False 면 즉시 rule-based 반환 (빠름)
     if not USE_OLLAMA:
         return analyze_review_rule_based(review, rating)
-
-    # USE_OLLAMA=True 면 Ollama 시도, 실패/타임아웃 시 rule-based fallback
     try:
         return analyze_review_with_ollama(review, rating)
     except Exception as error:

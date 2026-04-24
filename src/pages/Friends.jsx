@@ -7,7 +7,7 @@ import FriendCard from '../components/Friends/FriendCard';
 import FloatingActions from '../components/common/FloatingActions';
 import { useAuth } from '../contexts/AuthContext';
 
-// byj 버전으로 업데이트된 USER_POOL (이름 목록 변경 + 인원 추가)
+// byj: USER_POOL 이름 변경 + 인원 추가
 const USER_POOL = [
   {
     name: '김태환',
@@ -79,10 +79,10 @@ const Friends = () => {
   const [myFriends, setMyFriends] = useState([]);
   const inputRef = useRef(null);
 
-  // byj: localStorage 기반 친구 저장 (사용자별 고유 키)
+  // byj: 사용자별 고유 localStorage 키
   const storageKey = user ? `gimibok_friends_${user.uid}` : null;
 
-  // 로그인한 사용자의 친구 목록 불러오기
+  // byj: 로그인 시 해당 유저 친구 목록 불러오기
   useEffect(() => {
     if (storageKey) {
       const saved = localStorage.getItem(storageKey);
@@ -90,7 +90,7 @@ const Friends = () => {
     }
   }, [storageKey]);
 
-  // 친구 목록 변경 시 저장
+  // byj: 친구 목록 변경 시 localStorage 저장
   useEffect(() => {
     if (storageKey) {
       localStorage.setItem(storageKey, JSON.stringify(myFriends));
@@ -144,15 +144,15 @@ const Friends = () => {
     const q = query.trim().toLowerCase();
     if (!q) return myFriends;
     return myFriends.filter(
-      (f) =>
-        f.name.toLowerCase().includes(q) ||
-        f.userCode?.toLowerCase().includes(q),
+      (friend) =>
+        friend.name.toLowerCase().includes(q) ||
+        friend.userCode?.toLowerCase().includes(q),
     );
   }, [myFriends, query]);
 
   const handleDelete = (friendId) => {
     if (window.confirm('정말 삭제하시겠습니까?')) {
-      setMyFriends((prev) => prev.filter((f) => f.id !== friendId));
+      setMyFriends((prev) => prev.filter((friend) => friend.id !== friendId));
     }
   };
 

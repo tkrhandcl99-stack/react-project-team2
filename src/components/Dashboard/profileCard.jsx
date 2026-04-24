@@ -8,7 +8,7 @@ const ProfileCard = ({
   tasteProfile,
   onEditTasteProfile,
 }) => {
-  // 태그별 툴팁 설명 (byj 추가)
+  // byj: 태그별 툴팁 설명
   const tagDescriptions = {
     '#매운맛고수': '스트레스 풀리는 매운맛을 가장 즐겨요 🌶️',
     '#식감마스터': '꼬들함과 바삭함 등 입안의 즐거움을 찾아요 ✨',
@@ -18,7 +18,7 @@ const ProfileCard = ({
     '#미식가': '기미복이 인증하는 균형 잡힌 입맛의 소유자입니다',
   };
 
-  // tasteProfile 수치 기반 태그 생성 (byj 추가)
+  // byj: tasteProfile 수치 기반 태그 자동 생성
   const getTasteTags = (profile) => {
     if (!profile || !user) return [];
     const tags = [];
@@ -35,7 +35,7 @@ const ProfileCard = ({
   const handleCopyId = () => {
     if (!user) return;
     navigator.clipboard.writeText(userProfile?.userCode || '').then(() => {
-      alert('복사가 완료되었습니다.');
+      alert('ID가 복사되었습니다!');
     });
   };
 
@@ -43,7 +43,7 @@ const ProfileCard = ({
     <section className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-50 transition-all">
       <div className="flex items-start gap-8">
         {/* 좌측: 프로필 */}
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-4 w-[120px] flex-shrink-0">
           <div className="relative">
             {user ? (
               <img
@@ -66,7 +66,7 @@ const ProfileCard = ({
             )}
           </div>
 
-          <div className="text-center min-w-max px-1">
+          <div className="text-center w-full px-1">
             {user ? (
               <span className="text-[10px] font-black text-[#F05A28] uppercase tracking-tighter bg-orange-50 px-3 py-1 rounded-full border border-orange-100">
                 {userProfile?.level || 'Expert'}
@@ -83,7 +83,9 @@ const ProfileCard = ({
 
             {/* 고유 ID + 태그 영역 */}
             <div
-              className={`mt-2 flex flex-col items-center gap-1 transition-all ${!user ? 'opacity-30 grayscale blur-[1px]' : ''}`}
+              className={`mt-2 flex flex-col items-center gap-1 transition-all ${
+                !user ? 'opacity-30 grayscale blur-[1px]' : ''
+              }`}
             >
               <div className="flex items-center gap-1.5">
                 <span className="text-[9px] font-bold text-[#F05A28]/60 uppercase">
@@ -95,18 +97,19 @@ const ProfileCard = ({
                 {user && (
                   <button
                     onClick={handleCopyId}
-                    className="p-1 text-[#F05A28]/40 hover:text-[#F05A28] cursor-pointer"
+                    className="p-1 text-[#F05A28]/40 hover:text-[#F05A28] transition-colors cursor-pointer"
+                    title="ID 복사"
                   >
                     <Copy size={10} />
                   </button>
                 )}
               </div>
 
-              {/* 태그 + 툴팁 (byj 추가) */}
-              <div className="flex flex-wrap justify-center gap-2 mt-1.5">
+              {/* byj: 태그 + 툴팁 */}
+              <div className="flex flex-wrap justify-center gap-1 mt-1.5 w-full">
                 {myTags.map((tag) => (
                   <div key={tag} className="group relative cursor-help">
-                    <span className="text-[13px] font-black text-[#F05A28] transition-all duration-200 inline-block group-hover:scale-110 group-hover:drop-shadow-sm">
+                    <span className="text-[11px] font-black text-[#F05A28] transition-all duration-200 inline-block group-hover:scale-110 group-hover:drop-shadow-sm">
                       {tag}
                     </span>
                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 z-50">
@@ -145,7 +148,11 @@ const ProfileCard = ({
                 </span>
               </div>
             )}
-            <div className={!user ? 'opacity-20 grayscale' : ''}>
+            <div
+              className={
+                !user ? 'opacity-20 grayscale transition-all' : 'transition-all'
+              }
+            >
               <TasteRadar profile={tasteProfile} size={180} showLabels />
             </div>
           </div>

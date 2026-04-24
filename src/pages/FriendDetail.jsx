@@ -10,7 +10,7 @@ import {
 import TasteRadar from '../components/common/TasteRadar';
 import NavigationBar from '../components/Dashboard/NavigationBar';
 
-// ✅ 태그별 상세 설명 데이터 추가
+// byj: tagTranslation 제거 → 동적 태그 설명으로 교체
 const tagDescriptions = {
   '#매운맛 고수 🌶️': '스트레스 풀리는 매운맛을 가장 즐겨요 🌶️',
   '#식감 마스터 ✨': '꼬들함과 바삭함 등 입안의 즐거움을 찾아요 ✨',
@@ -26,7 +26,7 @@ const FriendDetail = () => {
   const location = useLocation();
   const friend = location.state?.friend;
 
-  // ✅ 동적 태그 생성 함수 추가
+  // byj: 동적 태그 생성 함수 추가
   const getTasteTags = (profile) => {
     if (!profile) return ['#미식 탐험가'];
     const tags = [];
@@ -195,19 +195,16 @@ const FriendDetail = () => {
             </span>
             <TasteRadar profile={friend.tasteProfile} size={220} />
 
-            {/* ✅ [수정 완료] 진한 주황색 + 확대 효과 + 툴팁 적용 영역 */}
+            {/* byj: 동적 태그 + 툴팁 */}
             <div className="flex flex-wrap justify-center gap-2 mt-6 px-4">
               {myTags.map((tag) => (
                 <div key={tag} className="group relative cursor-help">
                   <span className="px-1 py-0.5 text-[14px] font-black text-[#F05A28] transition-all duration-200 inline-block group-hover:scale-110">
                     {tag}
                   </span>
-
-                  {/* 툴팁 설명창 */}
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 z-50 animate-in fade-in zoom-in duration-200">
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 z-50">
                     <div className="bg-slate-800 text-white text-[10px] p-2.5 rounded-xl shadow-xl text-center leading-relaxed font-medium">
                       {tagDescriptions[tag]}
-                      {/* 화살표 */}
                       <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-800"></div>
                     </div>
                   </div>
@@ -269,7 +266,6 @@ const FriendDetail = () => {
             >
               <ArrowUp size={20} />
             </button>
-
             <button className="w-14 h-14 bg-[#ff5722] rounded-full shadow-xl shadow-orange-200 flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-all">
               <MessageCircle size={28} fill="white" />
             </button>

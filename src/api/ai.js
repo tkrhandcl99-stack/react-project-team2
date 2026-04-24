@@ -25,3 +25,19 @@ export const analyzeRestaurants = async (restaurants, userProfile) => {
   });
   return response.data;
 };
+
+// 카카오맵 실제 리뷰 크롤링 후 신뢰도 분석
+export const crawlAndAnalyze = async (
+  placeUrl,
+  name,
+  category,
+  userProfile,
+) => {
+  const response = await axios.post(`${AI_BASE_URL}/api/crawl-and-analyze`, {
+    placeUrl,
+    name,
+    category,
+    userProfile,
+  });
+  return response.data;
+};

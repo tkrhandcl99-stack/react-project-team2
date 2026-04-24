@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import TasteRadar from '../common/TasteRadar';
 
 const FriendCard = ({ friend, onDelete, onViewProfile }) => {
+  // byj: 태그별 툴팁 설명
   const tagDescriptions = {
     '#매운맛 고수 🌶️': '스트레스 풀리는 매운맛을 가장 즐겨요 🌶️',
     '#식감 마스터 ✨': '꼬들함과 바삭함 등 입안의 즐거움을 찾아요 ✨',
@@ -15,7 +16,7 @@ const FriendCard = ({ friend, onDelete, onViewProfile }) => {
     '미식 메이트': '함께 맛집을 탐험할 미식 파트너입니다',
   };
 
-  // tasteProfile 수치 기반 동적 태그 생성
+  // byj: tasteProfile 수치 기반 동적 태그 생성
   const getDynamicTasteTags = (profile) => {
     if (!profile) return ['#미식 탐험가'];
     const tags = [];
@@ -57,7 +58,7 @@ const FriendCard = ({ friend, onDelete, onViewProfile }) => {
           showLabels={true}
         />
 
-        {/* 동적 태그 + 툴팁 */}
+        {/* byj: 동적 태그 + 툴팁 */}
         <div className="flex flex-wrap justify-center gap-2 mt-5 px-2">
           {dynamicTags.map((tag, index) => {
             const cleanTag = tag.replace('#', '').trim();

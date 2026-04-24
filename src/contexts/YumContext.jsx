@@ -21,6 +21,7 @@ const normalizeRestaurant = (data) => {
       phone: data.phone,
       placeUrl: data.place_url,
       match: null,
+      trustedRating: data.trustedRating ?? null,
     };
   }
   return data;
@@ -31,19 +32,26 @@ export const YumProvider = ({ children }) => {
   const [visitHistory, setVisitHistory] = useState([]);
   const [friends, setFriends] = useState([]);
 
-  const addFavorite = (shop) => setFavorites((prev) => [...prev, shop]);
-  const removeFavorite = (id) =>
+  const addFavorite = (shop) => {
+    setFavorites((prev) => [...prev, shop]);
+  };
+
+  const removeFavorite = (id) => {
     setFavorites((prev) => prev.filter((shop) => shop.id !== id));
+  };
 
   const addToHistory = (rawData) => {
     const restaurant = normalizeRestaurant(rawData);
     setVisitHistory((prev) => {
       const filtered = prev.filter((r) => r.id !== restaurant.id);
-      return [restaurant, ...filtered].slice(0, MAX_HISTORY);
+      const updated = [restaurant, ...filtered];
+      return updated.slice(0, MAX_HISTORY);
     });
   };
 
-  const addFriend = (newFriend) => setFriends((prev) => [newFriend, ...prev]);
+  const addFriend = (newFriend) => {
+    setFriends((prev) => [newFriend, ...prev]);
+  };
 
   return (
     <YumContext.Provider
@@ -65,7 +73,8 @@ export const YumProvider = ({ children }) => {
 
 export const useYum = () => {
   const context = useContext(YumContext);
-  if (!context)
+  if (!context) {
     throw new Error('useYum은 YumProvider 안에서 사용되어야 합니다.');
+  }
   return context;
 };

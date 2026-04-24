@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { analyzeRestaurants } from '../../api/ai';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { analyzeRestaurants, crawlAndAnalyze } from '../../api/ai';
 import { useTasteProfile } from '../../contexts/TasteProfileContext';
 
 const MAX_DISTANCE_KM = 5;
@@ -23,15 +23,30 @@ const getDistanceKm = (lat1, lng1, lat2, lng2) => {
   return R * c;
 };
 
-const AiRecommendationPanel = ({ nearbyRestaurants = [], currentLocation }) => {
+const AiRecommendationPanel = ({
+  nearbyRestaurants = [],
+  currentLocation,
+  onAnalyzed,
+}) => {
   const { tasteProfile } = useTasteProfile();
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isFallback, setIsFallback] = useState(false);
+
+  // onAnalyzed를 ref로 감싸서 의존성 제외
+  const onAnalyzedRef = useRef(onAnalyzed);
+  useEffect(() => {
+    onAnalyzedRef.current = onAnalyzed;
+  }, [onAnalyzed]);
+
+  // 분석 실행 여부를 id 목록으로만 판단 - trustedRating 변경은 무시
+  const restaurantIds = useMemo(() => {
+    return nearbyRestaurants.map((r) => r.id).join(',');
+  }, [nearbyRestaurants.map((r) => r.id).join(',')]); // eslint-disable-line
 
   const restaurantsWithDistance = useMemo(() => {
     if (!currentLocation || nearbyRestaurants.length === 0) return [];
-
     return nearbyRestaurants.map((restaurant) => {
       const distanceKm = getDistanceKm(
         currentLocation.lat,
@@ -39,13 +54,9 @@ const AiRecommendationPanel = ({ nearbyRestaurants = [], currentLocation }) => {
         restaurant.lat,
         restaurant.lng,
       );
-
-      return {
-        ...restaurant,
-        distanceKm,
-      };
+      return { ...restaurant, distanceKm };
     });
-  }, [nearbyRestaurants, currentLocation]);
+  }, [restaurantIds, currentLocation]); // nearbyRestaurants 대신 id 문자열 사용
 
   const nearbyWithin5km = useMemo(() => {
     return restaurantsWithDistance.filter(
@@ -54,27 +65,66 @@ const AiRecommendationPanel = ({ nearbyRestaurants = [], currentLocation }) => {
   }, [restaurantsWithDistance]);
 
   useEffect(() => {
+    // 식당 목록이 없거나 위치 없으면 스킵
+    if (!currentLocation || restaurantIds === '') return;
+
     const fetchRecommendations = async () => {
       try {
         setLoading(true);
         setError('');
+        setIsFallback(false);
 
-        if (!currentLocation) {
-          setRestaurants([]);
-          return;
-        }
+        let targetRestaurants = nearbyWithin5km;
+        let fallback = false;
 
         if (nearbyWithin5km.length === 0) {
-          setRestaurants([]);
-          return;
+          if (restaurantsWithDistance.length === 0) {
+            setRestaurants([]);
+            return;
+          }
+          targetRestaurants = restaurantsWithDistance;
+          fallback = true;
         }
 
-        // 5km 이내 식당만 분석
-        const data = await analyzeRestaurants(nearbyWithin5km, tasteProfile);
+        // 각 식당별로 실제 리뷰 크롤링 후 신뢰도 분석 (병렬 처리)
+        const data = await Promise.all(
+          targetRestaurants.map((restaurant) =>
+            crawlAndAnalyze(
+              restaurant.placeUrl,
+              restaurant.name,
+              restaurant.category,
+              tasteProfile,
+            )
+              .then((result) => ({
+                ...result,
+                id: restaurant.id,
+                lat: restaurant.lat,
+                lng: restaurant.lng,
+                img: restaurant.img,
+                placeUrl: restaurant.placeUrl,
+                distanceKm: restaurant.distanceKm,
+              }))
+              .catch(() => ({
+                id: restaurant.id,
+                name: restaurant.name,
+                matchScore: 0,
+                trustedAverageRating: null,
+                lat: restaurant.lat,
+                lng: restaurant.lng,
+              })),
+          ),
+        );
 
-        // 그 안에서 일치도 높은 순으로 2개만
-        const top2 = data.slice(0, MAX_RESULTS);
+        const sorted = [...data].sort(
+          (a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0),
+        );
+        const top2 = sorted.slice(0, MAX_RESULTS);
+
         setRestaurants(top2);
+        setIsFallback(fallback);
+
+        // trustedRating 병합용 - 한 번만 실행됨
+        if (onAnalyzedRef.current) onAnalyzedRef.current(data);
       } catch (err) {
         console.error(err);
         setError('AI 추천 데이터를 불러오지 못했습니다.');
@@ -84,7 +134,8 @@ const AiRecommendationPanel = ({ nearbyRestaurants = [], currentLocation }) => {
     };
 
     fetchRecommendations();
-  }, [tasteProfile, nearbyWithin5km, currentLocation]);
+    // restaurantIds(id 문자열)가 바뀔 때만 실행 → trustedRating 병합으로는 재실행 안 됨
+  }, [restaurantIds, currentLocation, tasteProfile]);
 
   return (
     <section className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
@@ -96,8 +147,9 @@ const AiRecommendationPanel = ({ nearbyRestaurants = [], currentLocation }) => {
       </div>
 
       <p className="text-xs text-slate-500 mb-4">
-        내 위치 기준 {MAX_DISTANCE_KM}km 이내 식당 중 입맛 일치도가 높은{' '}
-        {MAX_RESULTS}곳 추천
+        {isFallback
+          ? `5km 이내 식당이 없어 주변 식당 중 입맛 일치도가 가장 높은 ${MAX_RESULTS}곳 추천`
+          : `내 위치 기준 ${MAX_DISTANCE_KM}km 이내 식당 중 입맛 일치도가 높은 ${MAX_RESULTS}곳 추천`}
       </p>
 
       {loading && (

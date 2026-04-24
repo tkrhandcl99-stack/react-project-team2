@@ -109,12 +109,20 @@ const MyDining = () => {
                     </div>
                   </div>
 
-                  {/* 매치율 */}
-                  <div className="flex-shrink-0 flex items-center">
-                    <span className="text-xs font-black text-[#F05A28]">
-                      {res.match}%
-                    </span>
-                  </div>
+                  {/* 신뢰반영 별점 */}
+                  {res.trustedRating != null ? (
+                    <div className="flex-shrink-0 flex flex-col items-center justify-center gap-0.5">
+                      <div className="flex items-center gap-0.5">
+                        <span className="text-[#F05A28]">★</span>
+                        <span className="text-sm font-black text-[#F05A28]">
+                          {res.trustedRating.toFixed(1)}
+                        </span>
+                      </div>
+                      <span className="text-[9px] text-slate-400 font-medium">
+                        신뢰반영
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
