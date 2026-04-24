@@ -14,6 +14,8 @@ const PlaceDetailCard = ({ place, onClose }) => {
   const handleDetailClick = async (e) => {
     e.stopPropagation();
 
+    let trustedRating = null;
+
     try {
       setIsAnalyzing(true);
       // 카카오맵 실제 리뷰 크롤링 후 신뢰도 분석
@@ -38,7 +40,13 @@ const PlaceDetailCard = ({ place, onClose }) => {
     });
 
     if (place.place_url) {
-      window.open(place.place_url, '_blank', 'noopener,noreferrer');
+      const a = document.createElement('a');
+      a.href = place.place_url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
   };
 

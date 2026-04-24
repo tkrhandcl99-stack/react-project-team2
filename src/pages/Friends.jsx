@@ -200,7 +200,7 @@ const Friends = () => {
         logout={logout}
         navigate={navigate}
       />
-      <main className="max-w-md mx-auto px-5 pt-20 pb-8">
+      <main className="max-w-md mx-auto px-5 pt-24 pb-8">
         <section className="mb-8">
           <div className="flex flex-col gap-4">
             <h2 className="text-xl font-bold text-slate-900">내 친구 목록</h2>

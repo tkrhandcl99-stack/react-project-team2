@@ -1,11 +1,10 @@
-import React, { useEffect, Suspense, useState, useCallback } from 'react';
+import React, { useEffect, Suspense, useState, useCallback, lazy } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-
+const KakaoMap = lazy(() => import('../components/KakaoMap'));
 import Header from '../components/Dashboard/Header';
 import ProfileCard from '../components/Dashboard/profileCard';
 import RestaurantList from '../components/Dashboard/RestaurantList';
 import NavigationBar from '../components/Dashboard/NavigationBar';
-import KakaoMap from '../components/KakaoMap';
 import FloatingActions from '../components/common/FloatingActions';
 import AiRecommendationPanel from '../components/Dashboard/AiRecommendationPanel';
 
@@ -34,10 +33,8 @@ const Dashboard = () => {
     userCode: user?.uid?.slice(0, 8).toUpperCase() || 'GUEST_01',
   };
 
-  // AI 분석 완료되면 호출 → nearbyRestaurants에 trustedRating 병합
   const handleAnalyzed = useCallback((analyzedList) => {
     if (!analyzedList || analyzedList.length === 0) return;
-
     setNearbyRestaurants((prev) =>
       prev.map((restaurant) => {
         const matched = analyzedList.find((a) => a.id === restaurant.id);
@@ -72,45 +69,57 @@ const Dashboard = () => {
               if (status === window.kakao.maps.services.Status.OK) {
                 const sliced = data.slice(0, 6);
 
-                const mapped = await Promise.all(
-                  sliced.map(async (place, index) => {
+                // ✅ 1단계: 이미지 없이 즉시 식당 목록 표시 (빠름)
+                const initial = sliced.map((place, index) => ({
+                  id: Number(place.id) || index + 1,
+                  name: place.place_name,
+                  category: place.category_group_name || '맛집',
+                  img: `https://picsum.photos/seed/${place.id || index}/800/500`,
+                  tags: [
+                    `#${place.category_group_name || '맛집'}`,
+                    `#${(
+                      place.road_address_name ||
+                      place.address_name ||
+                      '근처'
+                    )
+                      .split(' ')
+                      .slice(0, 2)
+                      .join('')}`,
+                  ],
+                  address: place.road_address_name || place.address_name,
+                  phone: place.phone,
+                  placeUrl: place.place_url,
+                  match: Math.max(80, 98 - index * 3),
+                  lat: Number(place.y),
+                  lng: Number(place.x),
+                  trustedRating: null,
+                  reviews: [],
+                }));
+
+                setNearbyRestaurants(initial);
+                setIsNearbyLoading(false);
+
+                // ✅ 2단계: 백그라운드에서 이미지 크롤링 후 업데이트
+                sliced.forEach(async (place, index) => {
+                  try {
                     const crawledImage = await fetchPlaceImage(place.place_url);
-
-                    return {
-                      id: Number(place.id) || index + 1,
-                      name: place.place_name,
-                      category: place.category_group_name || '맛집',
-                      img:
-                        crawledImage ||
-                        `https://picsum.photos/seed/${place.id || index}/800/500`,
-                      tags: [
-                        `#${place.category_group_name || '맛집'}`,
-                        `#${(
-                          place.road_address_name ||
-                          place.address_name ||
-                          '근처'
-                        )
-                          .split(' ')
-                          .slice(0, 2)
-                          .join('')}`,
-                      ],
-                      address: place.road_address_name || place.address_name,
-                      phone: place.phone,
-                      placeUrl: place.place_url,
-                      match: Math.max(80, 98 - index * 3),
-                      lat: Number(place.y),
-                      lng: Number(place.x),
-                      trustedRating: null, // AI 분석 전 초기값
-                      reviews: [], // 실제 리뷰는 AiRecommendationPanel에서 crawlAndAnalyze로 수집
-                    };
-                  }),
-                );
-
-                setNearbyRestaurants(mapped);
+                    if (crawledImage) {
+                      setNearbyRestaurants((prev) =>
+                        prev.map((r) =>
+                          r.id === (Number(place.id) || index + 1)
+                            ? { ...r, img: crawledImage }
+                            : r,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    // 이미지 크롤링 실패해도 기본 이미지 유지
+                  }
+                });
               } else {
                 setNearbyRestaurants([]);
+                setIsNearbyLoading(false);
               }
-              setIsNearbyLoading(false);
             },
             {
               location: center,
@@ -156,7 +165,8 @@ const Dashboard = () => {
         navigate={navigate}
       />
 
-      <main className="max-w-md mx-auto p-4 pt-20 space-y-6">
+      {/* pt-24: 플로팅 헤더(h-16) + top-4 여백 고려 */}
+      <main className="max-w-md mx-auto p-4 pt-24 space-y-6">
         <ProfileCard
           user={user}
           userProfile={userProfile}

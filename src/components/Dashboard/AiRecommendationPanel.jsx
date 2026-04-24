@@ -140,10 +140,7 @@ const AiRecommendationPanel = ({
   return (
     <section className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold">AI 리뷰 분석 추천</h3>
-        <span className="text-xs font-bold text-[#F05A28] bg-orange-50 px-2 py-1 rounded-full">
-          Beta
-        </span>
+        <h3 className="text-lg font-bold">입맛 분석 추천</h3>
       </div>
 
       <p className="text-xs text-slate-500 mb-4">
@@ -154,7 +151,7 @@ const AiRecommendationPanel = ({
 
       {loading && (
         <div className="text-sm text-slate-500">
-          AI가 리뷰를 분석해서 추천 중입니다...
+          내 입맛을 기반으로 맛집을 분석 중입니다...
         </div>
       )}
 
