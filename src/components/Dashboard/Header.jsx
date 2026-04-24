@@ -2,8 +2,9 @@ import { Home, LogOut } from 'lucide-react';
 import GimibokLogo from '../../assets/gimibok-logo.svg.webp';
 
 const Header = ({ user, loginWithGoogle, logout, navigate }) => (
-  <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 h-16 shadow-sm">
-    <div className="max-w-md mx-auto h-full px-4 flex items-center relative">
+  <nav className="fixed top-4 left-0 right-0 z-50 flex justify-center pointer-events-none">
+    <div className="w-full max-w-md mx-4 bg-white/95 backdrop-blur-xl border border-gray-100 rounded-2xl shadow-lg h-16 flex items-center px-4 relative pointer-events-auto">
+      {/* 홈 버튼 */}
       <div className="absolute left-4">
         <button
           onClick={() => navigate('/')}
@@ -13,6 +14,7 @@ const Header = ({ user, loginWithGoogle, logout, navigate }) => (
         </button>
       </div>
 
+      {/* 로고 */}
       <div className="flex-1 flex justify-center">
         <img
           src={GimibokLogo}
@@ -22,6 +24,7 @@ const Header = ({ user, loginWithGoogle, logout, navigate }) => (
         />
       </div>
 
+      {/* 로그인/유저 */}
       <div className="absolute right-4 flex items-center">
         {user ? (
           <div className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">

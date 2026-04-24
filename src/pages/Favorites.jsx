@@ -22,7 +22,7 @@ const Favorites = () => {
         navigate={navigate}
       />
 
-      <main className="max-w-md mx-auto px-5 pt-20 pb-8">
+      <main className="max-w-md mx-auto px-5 pt-24 pb-8">
         <div className="mb-8">
           <p className="text-sm text-[#F05A28] font-medium mb-1">
             나만의 컬렉션

@@ -172,7 +172,7 @@ const FriendDetail = () => {
         </div>
       </div>
 
-      <main className="max-w-md mx-auto pt-20 px-5 space-y-6">
+      <main className="max-w-md mx-auto pt-24 px-5 space-y-6">
         <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center">
           <div className="w-24 h-24 rounded-full border-4 border-[#ff5722] mb-4 overflow-hidden shadow-md">
             <img

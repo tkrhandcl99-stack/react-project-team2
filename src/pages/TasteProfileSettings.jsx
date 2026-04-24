@@ -87,7 +87,7 @@ const TasteProfileSettings = () => {
         navigate={navigate}
       />
 
-      <main className="max-w-md mx-auto px-4 pt-20 pb-8 space-y-5">
+      <main className="max-w-md mx-auto px-4 pt-24 pb-8 space-y-5">
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/')}

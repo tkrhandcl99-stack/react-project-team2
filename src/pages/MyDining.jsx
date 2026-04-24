@@ -22,7 +22,7 @@ const MyDining = () => {
         navigate={navigate}
       />
 
-      <main className="max-w-md mx-auto px-5 pt-20 py-6 space-y-8">
+      <main className="max-w-md mx-auto px-5 pt-24 py-6 space-y-8">
         {/* 타이틀 */}
         <section>
           <h1 className="text-3xl font-extrabold text-slate-900 mb-1">
