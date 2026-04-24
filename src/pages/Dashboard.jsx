@@ -1,4 +1,4 @@
-import React, { useEffect, Suspense, useState } from 'react';
+import React, { useEffect, Suspense, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import Header from '../components/Dashboard/Header';
@@ -28,12 +28,28 @@ const Dashboard = () => {
   const [isNearbyLoading, setIsNearbyLoading] = useState(true);
   const [currentLocation, setCurrentLocation] = useState(null);
 
-  // userProfile - userCode는 uid 앞 8자리 대문자
   const userProfile = {
     nickname: user?.displayName || '미식탐험가',
     level: 'Expert',
     userCode: user?.uid?.slice(0, 8).toUpperCase() || 'GUEST_01',
   };
+
+  // AI 분석 완료되면 호출 → nearbyRestaurants에 trustedRating 병합
+  const handleAnalyzed = useCallback((analyzedList) => {
+    if (!analyzedList || analyzedList.length === 0) return;
+
+    setNearbyRestaurants((prev) =>
+      prev.map((restaurant) => {
+        const matched = analyzedList.find((a) => a.id === restaurant.id);
+        if (!matched) return restaurant;
+        return {
+          ...restaurant,
+          trustedRating: matched.trustedAverageRating ?? null,
+          suspiciousRatio: matched.suspiciousReviewRatio ?? null,
+        };
+      }),
+    );
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -84,16 +100,8 @@ const Dashboard = () => {
                       match: Math.max(80, 98 - index * 3),
                       lat: Number(place.y),
                       lng: Number(place.x),
-                      reviews: [
-                        {
-                          rating: 5,
-                          content: `${place.place_name}은 전체적으로 깔끔하고 무난하다는 평이 많아요.`,
-                        },
-                        {
-                          rating: 4,
-                          content: `${place.place_name}은 메뉴가 괜찮고 식감과 감칠맛이 좋다는 리뷰가 있습니다.`,
-                        },
-                      ],
+                      trustedRating: null, // AI 분석 전 초기값
+                      reviews: [], // 실제 리뷰는 AiRecommendationPanel에서 crawlAndAnalyze로 수집
                     };
                   }),
                 );
@@ -159,6 +167,7 @@ const Dashboard = () => {
         <AiRecommendationPanel
           nearbyRestaurants={nearbyRestaurants}
           currentLocation={currentLocation}
+          onAnalyzed={handleAnalyzed}
         />
 
         <section className="space-y-3">

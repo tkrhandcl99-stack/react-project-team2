@@ -21,6 +21,7 @@ const normalizeRestaurant = (data) => {
       phone: data.phone,
       placeUrl: data.place_url,
       match: null,
+      trustedRating: data.trustedRating ?? null,
     };
   }
   return data;
