@@ -5,6 +5,7 @@ import Header from '../components/Dashboard/Header';
 import NavigationBar from '../components/Dashboard/NavigationBar';
 import FloatingActions from '../components/common/FloatingActions';
 import TasteRadar from '../components/common/TasteRadar';
+import TasteSlider from '../components/common/TasteSlider';
 import { useAuth } from '../contexts/AuthContext';
 import { useTasteProfile } from '../contexts/TasteProfileContext';
 
@@ -55,7 +56,6 @@ const TasteProfileSettings = () => {
   const navigate = useNavigate();
   const { user, loginWithGoogle, logout } = useAuth();
   const { tasteProfile, updateTasteProfile } = useTasteProfile();
-
   const [activeTab, setActiveTab] = useState('home');
   const [form, setForm] = useState(tasteProfile);
 
@@ -67,10 +67,7 @@ const TasteProfileSettings = () => {
   }, [form]);
 
   const handleChange = (key, value) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: Number(value),
-    }));
+    setForm((prev) => ({ ...prev, [key]: Number(value) }));
   };
 
   const handleSave = () => {
@@ -88,6 +85,7 @@ const TasteProfileSettings = () => {
       />
 
       <main className="max-w-md mx-auto px-4 pt-24 pb-8 space-y-5">
+        {/* 헤더 */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/')}
@@ -103,14 +101,13 @@ const TasteProfileSettings = () => {
           </div>
         </div>
 
+        {/* 미리보기 */}
         <section className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
           <div className="flex flex-col items-center gap-4">
             <span className="text-xs font-bold tracking-[0.25em] text-slate-400 uppercase">
               Preview
             </span>
-
             <TasteRadar profile={form} size={250} showLabels />
-
             <div className="grid grid-cols-2 gap-2 w-full">
               {sliderMeta.map((item) => (
                 <div
@@ -127,42 +124,20 @@ const TasteProfileSettings = () => {
           </div>
         </section>
 
+        {/* 슬라이더 목록 */}
         <section className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 space-y-6">
-          {sliderMeta.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <div key={item.key} className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 font-semibold text-slate-800">
-                    <Icon size={18} className="text-[#F05A28]" />
-                    {item.label}
-                  </label>
-
-                  <span className="text-xs font-bold text-[#F05A28] bg-orange-50 px-3 py-1 rounded-full">
-                    {currentSummary[item.key]}
-                  </span>
-                </div>
-
-                <input
-                  type="range"
-                  min="1"
-                  max="5"
-                  step="1"
-                  value={form[item.key]}
-                  onChange={(e) => handleChange(item.key, e.target.value)}
-                  className="w-full accent-[#F05A28] cursor-pointer"
-                />
-
-                <div className="flex justify-between text-[11px] text-slate-400 px-1">
-                  <span>{item.left}</span>
-                  <span>{item.right}</span>
-                </div>
-              </div>
-            );
-          })}
+          {sliderMeta.map((item) => (
+            <TasteSlider
+              key={item.key}
+              item={item}
+              value={form[item.key]}
+              summary={currentSummary[item.key]}
+              onChange={handleChange}
+            />
+          ))}
         </section>
 
+        {/* 버튼 */}
         <div className="space-y-3">
           <button
             onClick={handleSave}
@@ -170,7 +145,6 @@ const TasteProfileSettings = () => {
           >
             설정 완료
           </button>
-
           <button
             onClick={() => navigate('/')}
             className="w-full h-12 text-slate-500 font-medium"
@@ -181,7 +155,6 @@ const TasteProfileSettings = () => {
       </main>
 
       <FloatingActions />
-
       <NavigationBar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
