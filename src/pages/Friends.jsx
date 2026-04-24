@@ -69,6 +69,11 @@ const USER_POOL = [
     userCode: 'WOOSUNG_W',
     image: 'https://i.pravatar.cc/150?u=12',
   },
+  {
+    name: '김선화',
+    userCode: 'SH_K',
+    image: 'https://i.pravatar.cc/150?u=13',
+  },
 ];
 
 const Friends = () => {
@@ -162,7 +167,7 @@ const Friends = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#f9f9f9] flex flex-col">
+      <div className="h-dvh bg-[#f9f9f9] flex flex-col overflow-hidden">
         <Header loginWithGoogle={loginWithGoogle} navigate={navigate} />
         <main className="flex-1 flex flex-col items-center justify-center px-6 text-center">
           <div className="w-20 h-20 bg-orange-50 rounded-3xl flex items-center justify-center text-[#ff5722] mb-6 shadow-sm">
@@ -178,7 +183,7 @@ const Friends = () => {
           </p>
           <button
             onClick={loginWithGoogle}
-            className="w-full py-4 bg-[#ff5722] text-white rounded-2xl font-bold shadow-lg shadow-orange-100"
+            className="w-64 py-4 bg-[#ff5722] text-white rounded-2xl font-bold shadow-lg shadow-orange-100"
           >
             구글로 로그인하기
           </button>

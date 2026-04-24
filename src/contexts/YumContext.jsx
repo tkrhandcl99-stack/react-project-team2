@@ -49,6 +49,12 @@ export const YumProvider = ({ children }) => {
     });
   };
 
+  const updateHistoryRating = (id, trustedRating) => {
+    setVisitHistory((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, trustedRating } : r)),
+    );
+  };
+
   const addFriend = (newFriend) => {
     setFriends((prev) => [newFriend, ...prev]);
   };

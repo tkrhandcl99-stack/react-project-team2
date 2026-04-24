@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin } from 'lucide-react';
+import { MapPin, UtensilsCrossed } from 'lucide-react';
 import Header from '../components/Dashboard/Header';
 import NavigationBar from '../components/Dashboard/NavigationBar';
-import FloatingActions from '../components/common/FloatingActions';
 import { useAuth } from '../contexts/AuthContext';
 import { useYum } from '../contexts/YumContext';
 
@@ -12,6 +11,39 @@ const MyDining = () => {
   const { user, loginWithGoogle, logout } = useAuth();
   const { visitHistory } = useYum();
   const [activeTab, setActiveTab] = useState('mydining');
+
+  // 비로그인 화면
+  if (!user) {
+    return (
+      <div className="h-dvh bg-[#f9f9f9] flex flex-col overflow-hidden">
+        <Header loginWithGoogle={loginWithGoogle} navigate={navigate} />
+        <main className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+          <div className="w-20 h-20 bg-orange-50 rounded-3xl flex items-center justify-center text-[#ff5722] mb-6 shadow-sm">
+            <UtensilsCrossed size={36} />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            로그인이 필요합니다
+          </h2>
+          <p className="text-slate-500 text-sm mb-8 leading-relaxed">
+            로그인하시면 회원님만의
+            <br />
+            마이다이닝 목록을 확인할 수 있습니다.
+          </p>
+          <button
+            onClick={loginWithGoogle}
+            className="w-64 py-4 bg-[#ff5722] text-white rounded-2xl font-bold shadow-lg shadow-orange-100"
+          >
+            구글로 로그인하기
+          </button>
+        </main>
+        <NavigationBar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          navigate={navigate}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f9f9f9] text-slate-900 pb-24">
@@ -23,7 +55,6 @@ const MyDining = () => {
       />
 
       <main className="max-w-md mx-auto px-5 pt-24 py-6 space-y-8">
-        {/* 타이틀 */}
         <section>
           <h1 className="text-3xl font-extrabold text-slate-900 mb-1">
             My Dining
@@ -33,7 +64,6 @@ const MyDining = () => {
           </p>
         </section>
 
-        {/* 방문 기록 */}
         <section>
           <div className="flex justify-between items-center mb-5">
             <h2 className="text-xl font-bold text-slate-900">최근 본 맛집</h2>
@@ -67,23 +97,22 @@ const MyDining = () => {
                   key={res.id}
                   onClick={() => {
                     if (res.placeUrl) {
-                      window.open(
-                        res.placeUrl,
-                        '_blank',
-                        'noopener,noreferrer',
-                      );
+                      const a = document.createElement('a');
+                      a.href = res.placeUrl;
+                      a.target = '_blank';
+                      a.rel = 'noopener noreferrer';
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
                     }
                   }}
                   className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm flex gap-4 p-3 cursor-pointer active:scale-[0.98] transition-transform"
                 >
-                  {/* 순서 번호 */}
                   <div className="flex-shrink-0 w-7 flex items-center justify-center">
                     <span className="text-xs font-black text-slate-300">
                       {String(index + 1).padStart(2, '0')}
                     </span>
                   </div>
-
-                  {/* 이미지 */}
                   <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
                     <img
                       src={res.img}
@@ -91,8 +120,6 @@ const MyDining = () => {
                       className="w-full h-full object-cover"
                     />
                   </div>
-
-                  {/* 정보 */}
                   <div className="flex-1 min-w-0 flex flex-col justify-center">
                     <h3 className="text-sm font-black text-slate-900 truncate">
                       {res.name}
@@ -108,8 +135,6 @@ const MyDining = () => {
                       ))}
                     </div>
                   </div>
-
-                  {/* 신뢰반영 별점 */}
                   {res.trustedRating != null ? (
                     <div className="flex-shrink-0 flex flex-col items-center justify-center gap-0.5">
                       <div className="flex items-center gap-0.5">
@@ -129,8 +154,6 @@ const MyDining = () => {
           )}
         </section>
       </main>
-
-      <FloatingActions />
 
       <NavigationBar
         activeTab={activeTab}

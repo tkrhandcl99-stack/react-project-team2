@@ -67,7 +67,7 @@ const Dashboard = () => {
             '맛집',
             async (data, status) => {
               if (status === window.kakao.maps.services.Status.OK) {
-                const sliced = data.slice(0, 6);
+                const sliced = data.slice(0, 15);
 
                 // ✅ 1단계: 이미지 없이 즉시 식당 목록 표시 (빠름)
                 const initial = sliced.map((place, index) => ({
@@ -124,7 +124,7 @@ const Dashboard = () => {
             {
               location: center,
               radius: 5000,
-              size: 6,
+              size: 15,
               sort: window.kakao.maps.services.SortBy.DISTANCE,
             },
           );
