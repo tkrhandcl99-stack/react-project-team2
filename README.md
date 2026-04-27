@@ -119,6 +119,7 @@ flowchart TD
     L1 --- LA["AuthContext\nuser\nlogin()\nregister()\nlogout()"]
     L3 --- LB["localStorage\nyumpick_current_user\nyumpick_users"]
 ```
+```
 
 ### 👤 입맛 프로필 설정
 
