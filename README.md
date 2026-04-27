@@ -258,7 +258,6 @@ def get_match_score(user_profile, restaurant_profile):
 ---
 
 플로우 이미지
-
 ```mermaid
 flowchart TD
     A([앱 시작 main.jsx]) --> B[Provider 세팅 App.jsx\nAuthProvider / YumiProvider / TasteProfileProvider]
@@ -310,6 +309,8 @@ flowchart TD
     L5 --> L6[useEffect → localStorage]
     L1 --> L7[초기화 버튼\nresetTasteProfile]
 ```
+
+
 
 
 ## 🙌 마무리
