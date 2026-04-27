@@ -3,23 +3,37 @@ import TasteRadar from '../common/TasteRadar';
 import { tagDescriptions } from '../../data/tasteDatabase';
 
 const FriendProfileCard = ({ friend, tags }) => {
+  const getAvatarColor = (name) => {
+    const hue = ((name?.charCodeAt(0) || 0) * 37) % 360;
+    return `hsl(${hue}, 60%, 65%)`;
+  };
+
   return (
     <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center">
       {/* 프로필 이미지 */}
       <div className="w-24 h-24 rounded-full border-4 border-[#ff5722] mb-4 overflow-hidden shadow-md">
-        <img
-          src={friend.image}
-          alt={friend.name}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.target.src = 'https://via.placeholder.com/150';
-          }}
-        />
+        {friend.image ? (
+          <img
+            src={friend.image}
+            alt={friend.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        ) : (
+          <div
+            className="w-full h-full flex items-center justify-center text-white text-3xl font-black"
+            style={{ background: getAvatarColor(friend.name) }}
+          >
+            {friend.name?.charAt(0)?.toUpperCase() || '?'}
+          </div>
+        )}
       </div>
 
       <h2 className="text-2xl font-bold">{friend.name}</h2>
       <span className="text-[#ff5722] font-semibold text-sm mb-6">
-        ID: {friend.userCode}
+        ID: {friend.userCode || friend.id}
       </span>
 
       {/* 레이더 차트 + 태그 */}
