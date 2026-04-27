@@ -105,6 +105,37 @@ python app.py
 
 ---
 
+🎬 주요 기능 시연
+🔐 로그인 & 회원가입
+
+닉네임·비밀번호 입력 시 8자리 고유 ID 자동 생성, localStorage 기반 세션 유지
+
+<img width="628" height="1005" alt="login" src="https://github.com/user-attachments/assets/5e782306-8bd2-4e92-872e-3f285e3e859e" />
+
+🗺️ 지도 & 맛집 탐색
+
+내 위치 기반 카카오맵 마커 표시, 클릭 시 상세 카드 → 카카오맵 페이지 이동 + 마이다이닝 자동 저장
+
+<img width="628" height="1005" alt="map" src="https://github.com/user-attachments/assets/295cb8da-ef96-4233-b655-9d875db9bb9c" />
+
+💛 찜 목록
+
+하트 버튼으로 찜 추가/삭제, 연필 버튼으로 나만의 메모 작성 및 저장
+
+<img width="628" height="1005" alt="favorites" src="https://github.com/user-attachments/assets/0a808777-cc39-424b-839c-cf88788b4593" />
+
+👫 친구 기능
+
+고유 ID로 친구 추가, 입맛 레이더 차트 비교, 함께 가기 좋은 식당 추천
+
+<img width="628" height="1005" alt="friends" src="https://github.com/user-attachments/assets/eab75f8b-bf1c-405b-922d-3910596cf902" />
+
+👤 입맛 프로필 설정
+
+슬라이더 조절 시 레이더 차트 실시간 반영, 저장 시 localStorage 연동
+
+<img width="628" height="1005" alt="taste" src="https://github.com/user-attachments/assets/d2729d54-5f23-4887-92e4-8491a77edebc" />
+
 ## 🏗️ 컴포넌트 구조
 
 ```
