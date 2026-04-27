@@ -107,31 +107,78 @@ python app.py
 
 > ⚠️ 재부팅 후 시스템 트레이에 Ollama 아이콘이 있으면 터미널 1은 생략해도 됩니다.
 
-## 🏗️ 컴포넌트 구조
+## 🧩 컴포넌트 계층 구조
 
-```
-컴포넌트 분리 구조
+### 🔐 로그인 & 회원가입
 
-Dashboard
-├── ProfileCard            → 사용자 프로필 + 레이더 차트
-├── AiRecommendationPanel  → AI 입맛 분석 추천
-├── KakaoMap               → 지도 + 마커 + 상세 카드
-└── RestaurantList         → 근처 맛집 리스트
-
-Custom Hook 분리
-├── useKakaoMap            → 지도 초기화 로직
-├── useCurrentLocation     → 내 위치 마커 렌더링
-├── usePlaceImage          → Flask 이미지 크롤링 요청
-├── usePlaceSearch         → 키워드/위치 기반 장소 검색
-└── useInputs              → useReducer 기반 입력 상태 관리
-
-Context 분리
-├── AuthContext            → 로그인 상태
-├── YumContext             → 찜 / 방문기록 / 친구
-└── TasteProfileContext    → 입맛 프로필 5축 전역 관리
+```mermaid
+flowchart TD
+    Route --> L1["/login Login"]
+    Route --> L2["/register Register"]
+    L2 --> L3["고유 ID 8자리 생성"]
+    L1 --- LA["AuthContext\nuser\nlogin()\nregister()\nlogout()"]
+    L3 --- LB["localStorage\nyumpick_current_user\nyumpick_users"]
 ```
 
 ---
+
+### 🗺️ 지도 & 맛집 탐색
+
+```mermaid
+flowchart TD
+    Route --> D[Dashboard]
+    D --> KM[KakaoMap]
+    D --> RL[RestaurantList]
+    D --> AI[AiRecommendationPanel]
+    KM --- KMA["useKakaoMap()\nuseCurrentLocation()\nusePlaceSearch()\nonMarkerClick()"]
+    RL --- RLA["restaurants\nvisibleCount\nlastCardRef()\nIntersectionObserver\nonFavoriteToggle()"]
+    AI --- AIA["nearbyRestaurants\ncurrentLocation\ntasteProfile\nPython Flask API\nSelenium 크롤링\nonAnalyzed()"]
+```
+
+---
+
+### 💛 찜 목록 CRUD
+
+```mermaid
+flowchart TD
+    Route --> F["/favorites Favorites"]
+    F --> FC[FavoriteCard]
+    FC --- FCA["favorites ← YumContext\naddFavorite()\nremoveFavorite()\nupdateFavoriteMemo()"]
+    FC --- FCB["id / name / img\ntrustedRating / memo\n연필버튼 → 메모수정\n하트버튼 → 찜삭제"]
+```
+
+---
+
+### 👫 친구 추가 & 입맛 비교
+
+```mermaid
+flowchart TD
+    Route --> FR["/friends Friends"]
+    FR --> FSB[FriendSearchBar]
+    FR --> FRC[FriendCard]
+    FR --> FD["/friends/:id FriendDetail"]
+    FSB --- FSBA["고유 ID 입력\nfindUserById()\nlocalStorage 검색"]
+    FRC --- FRCA["friend\nonDelete()\nonViewProfile()\ntags / TasteRadar"]
+    FD --> FPC[FriendProfileCard]
+    FD --> FRS[FriendRecommendSection]
+    FPC --- FPCA["friend.tasteProfile\nTasteRadar SVG\nuserCode / tags"]
+    FRS --- FRSA["myProfile\nfriendProfile\ntasteDatabase → 추천 식당"]
+```
+
+---
+
+### 👤 입맛 프로필 설정
+
+```mermaid
+flowchart TD
+    Route --> TP["/profile/taste TasteProfile"]
+    TP --> TS[TasteSlider x5]
+    TP --> TR[TasteRadar]
+    TS --- TSA["spicy / texture\nsaltiness / sweetness / umami\nonChange() → setForm()"]
+    TR --- TRA["profile\nSVG 직접 구현\n5개 축 실시간 반영"]
+    TP --- TPA["updateTasteProfile(form)\nuseEffect → localStorage\nresetTasteProfile()"]
+    TPA --- TPB["TasteProfileContext\n전역 상태 관리\n새로고침 후에도 유지"]
+```
 
 ## 🛣️ 라우팅 구조
 
