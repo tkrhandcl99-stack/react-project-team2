@@ -238,6 +238,11 @@ def get_match_score(user_profile, restaurant_profile):
 
 ---
 
+플로우 이미지
+
+<img width="10552" height="4712" alt="제목 없음 (1)" src="https://github.com/user-attachments/assets/ebc00327-03af-4d64-80ea-6a585cdada79" />
+
+
 ## 🙌 마무리
 
 YumPick은 단순히 맛집을 보여주는 것을 넘어, **리뷰의 신뢰도**와 **개인의 입맛 데이터**를 결합해 진짜 나에게 맞는 식당을 찾아주는 서비스입니다.
