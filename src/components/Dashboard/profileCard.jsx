@@ -88,10 +88,10 @@ const ProfileCard = ({
               }`}
             >
               <div className="flex items-center gap-1.5">
-                <span className="text-[9px] font-bold text-[#F05A28]/60 uppercase">
+                <span className="text-[13px] font-bold text-[#F05A28]/60 uppercase">
                   ID:
                 </span>
-                <span className="text-[11px] font-bold text-[#F05A28] tracking-tight font-mono">
+                <span className="text-[13px] font-bold text-[#F05A28] tracking-tight font-mono">
                   {user ? userProfile?.userCode || 'N/A' : '••••••••'}
                 </span>
                 {user && (
@@ -133,10 +133,6 @@ const ProfileCard = ({
               Taste Profile
             </h3>
           </div>
-
-          <span className="absolute top-4 right-4 text-[9px] sm:text-[10px] font-medium text-[#F05A28] bg-orange-50 px-2 py-0.5 rounded-md z-10">
-            AI Analyzed
-          </span>
 
           <div className="relative w-full flex items-center justify-center">
             {!user && (
