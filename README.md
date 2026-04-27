@@ -259,7 +259,57 @@ def get_match_score(user_profile, restaurant_profile):
 
 플로우 이미지
 
-<img width="10552" height="4712" alt="제목 없음 (1)" src="https://github.com/user-attachments/assets/ebc00327-03af-4d64-80ea-6a585cdada79" />
+```mermaid
+flowchart TD
+    A([앱 시작 main.jsx]) --> B[Provider 세팅 App.jsx\nAuthProvider / YumiProvider / TasteProfileProvider]
+    B --> C{로그인 상태 확인\nPrivate Route - useAuth}
+    C -->|미로그인| D[/login\nLogin 페이지]
+    C -->|로그인됨| E[세션 복원\nlocalStorage → yumpick_current_user]
+    D --> F[/register\nRegister 페이지]
+    F --> G[회원 가입] --> H[고유 번호 8자리 생성]
+    E --> I[React Router 라우팅]
+    C -->|바로가기 시 로그인 유도| I
+
+    I --> J[Dashboard]
+    I --> K[Friends]
+    I --> L[TasteProfile]
+    I --> M[Favorites]
+    I --> N[MyDining]
+
+    J --> J1[Header / ProfileCard\nKakaoMap / RestaurantList\nFloatingActions / NavigationBar]
+    J1 --> J2[위치 획득\nnavigator.geolocation → lat/lng]
+    J2 --> J3[장소 추천\nKakao Places API]
+    J3 --> J4[최시 목록 표시]
+    J4 --> J5[백그라운드 이미지]
+    J1 --> BOT[AIChatbox 열기]
+    BOT --> MAP[카드 → 지도 연동]
+    MAP --> JS[카카오 js API 호출]
+
+    K --> K1[일괄처리\nAIRecommendationPanel]
+    K1 --> K2[Python Flask API 호출]
+    K2 --> K3[Selenium 크롤링]
+    K3 --> K4[신뢰 랭킹 분석]
+    K --> K5[Friends 목록\nuserFriends(user) → localStorage]
+    K5 --> K6[친구 ID 검색\nFriendSearchBar → handleAdd...]
+    K6 --> K7[findUserById]
+    K7 --> K8[친구 추가 성공\ntasteProfile 생성 + 저장]
+
+    M --> M1[/friendsList]
+    M1 --> M2[FriendProfileCard\nTasteRadar 레이더 차트 표시]
+    M2 --> M3[FriendRecommendSection\ntasteDatabase → 음식 추천]
+
+    N --> N1[visitHistory 최대 30개 표시] --> N2[방문 기록]
+    N --> N3[팀 목록 + 배열판업]
+    N3 --> N4[팀 관리]
+
+    L --> L1[TasteProfileSettings]
+    L1 --> L2[form제출 슬롯 표시]
+    L2 --> L3[TasteSlider x5]
+    L3 --> L4[TasteRadar 실시간 미리보기]
+    L4 --> L5[설명 완료 버튼\nupdateTasteProfile(form)]
+    L5 --> L6[useEffect → localStorage]
+    L1 --> L7[초기화 버튼\nresetTasteProfile]
+```
 
 
 ## 🙌 마무리
