@@ -313,6 +313,12 @@ def get_match_score(user_profile, restaurant_profile):
 
 <img width="628" height="1005" alt="login" src="https://github.com/user-attachments/assets/5e782306-8bd2-4e92-872e-3f285e3e859e" />
 
+👤 입맛 프로필 설정
+
+슬라이더 조절 시 레이더 차트 실시간 반영, 저장 시 localStorage 연동
+
+<img width="628" height="1005" alt="taste" src="https://github.com/user-attachments/assets/d2729d54-5f23-4887-92e4-8491a77edebc" />
+
 🗺️ 지도 & 맛집 탐색
 
 내 위치 기반 카카오맵 마커 표시, 클릭 시 상세 카드 → 카카오맵 페이지 이동 + 마이다이닝 자동 저장
@@ -330,12 +336,6 @@ def get_match_score(user_profile, restaurant_profile):
 고유 ID로 친구 추가, 입맛 레이더 차트 비교, 함께 가기 좋은 식당 추천
 
 <img width="628" height="1005" alt="friends" src="https://github.com/user-attachments/assets/eab75f8b-bf1c-405b-922d-3910596cf902" />
-
-👤 입맛 프로필 설정
-
-슬라이더 조절 시 레이더 차트 실시간 반영, 저장 시 localStorage 연동
-
-<img width="628" height="1005" alt="taste" src="https://github.com/user-attachments/assets/d2729d54-5f23-4887-92e4-8491a77edebc" />
 
 ---
 
