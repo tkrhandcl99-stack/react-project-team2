@@ -82,7 +82,7 @@ const Friends = () => {
               <FriendCard
                 key={friend.id}
                 friend={friend}
-                onDelete={() => handleDelete(friend.id)}
+                onDelete={() => handleDelete(friend.friendId)}
                 onViewProfile={() => handleViewProfile(friend)}
               />
             ))

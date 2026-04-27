@@ -40,6 +40,12 @@ export const YumProvider = ({ children }) => {
     setFavorites((prev) => prev.filter((shop) => shop.id !== id));
   };
 
+  const updateFavoriteMemo = (id, memo) => {
+    setFavorites((prev) =>
+      prev.map((shop) => (shop.id === id ? { ...shop, memo } : shop)),
+    );
+  };
+
   const addToHistory = (rawData) => {
     const restaurant = normalizeRestaurant(rawData);
     setVisitHistory((prev) => {
@@ -65,8 +71,10 @@ export const YumProvider = ({ children }) => {
         favorites,
         addFavorite,
         removeFavorite,
+        updateFavoriteMemo,
         visitHistory,
         addToHistory,
+        updateHistoryRating,
         friends,
         setFriends,
         addFriend,

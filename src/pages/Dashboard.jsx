@@ -30,7 +30,7 @@ const Dashboard = () => {
   const userProfile = {
     nickname: user?.displayName || '미식탐험가',
     level: 'Expert',
-    userCode: user?.uid?.slice(0, 8).toUpperCase() || 'GUEST_01',
+    userCode: user?.id || 'GUEST_01',
   };
 
   const handleAnalyzed = useCallback((analyzedList) => {

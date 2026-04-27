@@ -4,6 +4,7 @@ import { useTasteProfile } from '../../contexts/TasteProfileContext';
 
 const MAX_DISTANCE_KM = 5;
 const MAX_RESULTS = 2;
+const MAX_ANALYZE = 10; // 분석할 최대 식당 수
 
 const toRad = (value) => (value * Math.PI) / 180;
 
@@ -34,13 +35,11 @@ const AiRecommendationPanel = ({
   const [error, setError] = useState('');
   const [isFallback, setIsFallback] = useState(false);
 
-  // onAnalyzed를 ref로 감싸서 의존성 제외
   const onAnalyzedRef = useRef(onAnalyzed);
   useEffect(() => {
     onAnalyzedRef.current = onAnalyzed;
   }, [onAnalyzed]);
 
-  // 분석 실행 여부를 id 목록으로만 판단 - trustedRating 변경은 무시
   const restaurantIds = useMemo(() => {
     return nearbyRestaurants.map((r) => r.id).join(',');
   }, [nearbyRestaurants.map((r) => r.id).join(',')]); // eslint-disable-line
@@ -56,7 +55,7 @@ const AiRecommendationPanel = ({
       );
       return { ...restaurant, distanceKm };
     });
-  }, [restaurantIds, currentLocation]); // nearbyRestaurants 대신 id 문자열 사용
+  }, [restaurantIds, currentLocation]);
 
   const nearbyWithin5km = useMemo(() => {
     return restaurantsWithDistance.filter(
@@ -65,7 +64,6 @@ const AiRecommendationPanel = ({
   }, [restaurantsWithDistance]);
 
   useEffect(() => {
-    // 식당 목록이 없거나 위치 없으면 스킵
     if (!currentLocation || restaurantIds === '') return;
 
     const fetchRecommendations = async () => {
@@ -86,9 +84,13 @@ const AiRecommendationPanel = ({
           fallback = true;
         }
 
-        // 각 식당별로 실제 리뷰 크롤링 후 신뢰도 분석 (병렬 처리)
+        // 가까운 순으로 정렬 후 최대 10개만 분석
+        const limited = [...targetRestaurants]
+          .sort((a, b) => a.distanceKm - b.distanceKm)
+          .slice(0, MAX_ANALYZE);
+
         const data = await Promise.all(
-          targetRestaurants.map((restaurant) =>
+          limited.map((restaurant) =>
             crawlAndAnalyze(
               restaurant.placeUrl,
               restaurant.name,
@@ -123,7 +125,6 @@ const AiRecommendationPanel = ({
         setRestaurants(top2);
         setIsFallback(fallback);
 
-        // trustedRating 병합용 - 한 번만 실행됨
         if (onAnalyzedRef.current) onAnalyzedRef.current(data);
       } catch (err) {
         console.error(err);
@@ -134,7 +135,6 @@ const AiRecommendationPanel = ({
     };
 
     fetchRecommendations();
-    // restaurantIds(id 문자열)가 바뀔 때만 실행 → trustedRating 병합으로는 재실행 안 됨
   }, [restaurantIds, currentLocation, tasteProfile]);
 
   return (
