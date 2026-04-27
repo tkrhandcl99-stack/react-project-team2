@@ -224,7 +224,7 @@ const Friends   = lazy(() => import('./pages/Friends'));
 // ...
 ```
 before
-<img width="581" height="376" alt="image" src="https://github.com/user-attachments/assets/eedbae38-d701-4a1e-8776-1ede1d2e9aa2" />
+<img width="554" height="372" alt="image" src="https://github.com/user-attachments/assets/ac867c58-9472-488e-9ea3-c1d2cca3589b" />
 after
 <img width="579" height="248" alt="image" src="https://github.com/user-attachments/assets/47240108-9ab9-441a-8a2e-bd538e3e5c49" />
 
