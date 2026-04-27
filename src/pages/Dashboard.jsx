@@ -29,7 +29,7 @@ const Dashboard = () => {
 
   const userProfile = {
     nickname: user?.displayName || '미식탐험가',
-    level: 'Expert',
+    level: user?.name || 'Guest',
     userCode: user?.id || 'GUEST_01',
   };
 
