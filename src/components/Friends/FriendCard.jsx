@@ -3,7 +3,6 @@ import { Trash2 } from 'lucide-react';
 import TasteRadar from '../common/TasteRadar';
 
 const FriendCard = ({ friend, onDelete, onViewProfile }) => {
-  // byj: 태그별 툴팁 설명
   const tagDescriptions = {
     '#매운맛 고수 🌶️': '스트레스 풀리는 매운맛을 가장 즐겨요 🌶️',
     '#식감 마스터 ✨': '꼬들함과 바삭함 등 입안의 즐거움을 찾아요 ✨',
@@ -16,7 +15,6 @@ const FriendCard = ({ friend, onDelete, onViewProfile }) => {
     '미식 메이트': '함께 맛집을 탐험할 미식 파트너입니다',
   };
 
-  // byj: tasteProfile 수치 기반 동적 태그 생성
   const getDynamicTasteTags = (profile) => {
     if (!profile) return ['#미식 탐험가'];
     const tags = [];
@@ -30,19 +28,34 @@ const FriendCard = ({ friend, onDelete, onViewProfile }) => {
 
   const dynamicTags = getDynamicTasteTags(friend.tasteProfile);
 
+  // 이름 기반 고유 색상 생성
+  const getAvatarColor = (name) => {
+    const hue = ((name?.charCodeAt(0) || 0) * 37) % 360;
+    return `hsl(${hue}, 60%, 65%)`;
+  };
+
   return (
     <div className="bg-white rounded-[32px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col gap-4 relative overflow-hidden">
       {/* 1. 상단 프로필 */}
       <div className="flex items-center gap-4">
-        <img
-          src={friend.image}
-          alt={friend.name}
-          className="w-16 h-16 rounded-2xl object-cover border-2 border-orange-50"
-        />
+        {friend.image ? (
+          <img
+            src={friend.image}
+            alt={friend.name}
+            className="w-16 h-16 rounded-2xl object-cover border-2 border-orange-50"
+          />
+        ) : (
+          <div
+            className="w-16 h-16 rounded-2xl border-2 border-orange-50 flex items-center justify-center text-white text-2xl font-black"
+            style={{ background: getAvatarColor(friend.name) }}
+          >
+            {friend.name?.charAt(0)?.toUpperCase() || '?'}
+          </div>
+        )}
         <div>
           <h3 className="text-lg font-bold text-slate-900">{friend.name}</h3>
           <span className="text-xs text-[#ff5722] font-bold uppercase">
-            ID: {friend.userCode}
+            ID: {friend.userCode || friend.id}
           </span>
         </div>
       </div>

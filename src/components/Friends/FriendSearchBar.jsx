@@ -15,7 +15,7 @@ const FriendSearchBar = ({ inputRef, query, onChange, onAdd, onKeyDown }) => {
             <input
               ref={inputRef}
               type="text"
-              placeholder="ID 또는 닉네임 입력..."
+              placeholder="고유 ID 입력..."
               value={query}
               onChange={onChange}
               onKeyDown={onKeyDown}
