@@ -120,6 +120,18 @@ flowchart TD
     L3 --- LB["localStorage\nyumpick_current_user\nyumpick_users"]
 ```
 
+### 👤 입맛 프로필 설정
+
+```mermaid
+flowchart TD
+    Route --> TP["/profile/taste TasteProfile"]
+    TP --> TS[TasteSlider x5]
+    TP --> TR[TasteRadar]
+    TS --- TSA["spicy / texture\nsaltiness / sweetness / umami\nonChange() → setForm()"]
+    TR --- TRA["profile\nSVG 직접 구현\n5개 축 실시간 반영"]
+    TP --- TPA["updateTasteProfile(form)\nuseEffect → localStorage\nresetTasteProfile()"]
+    TPA --- TPB["TasteProfileContext\n전역 상태 관리\n새로고침 후에도 유지"]
+```
 ---
 
 ### 🗺️ 지도 & 맛집 탐색
@@ -166,19 +178,6 @@ flowchart TD
 ```
 
 ---
-
-### 👤 입맛 프로필 설정
-
-```mermaid
-flowchart TD
-    Route --> TP["/profile/taste TasteProfile"]
-    TP --> TS[TasteSlider x5]
-    TP --> TR[TasteRadar]
-    TS --- TSA["spicy / texture\nsaltiness / sweetness / umami\nonChange() → setForm()"]
-    TR --- TRA["profile\nSVG 직접 구현\n5개 축 실시간 반영"]
-    TP --- TPA["updateTasteProfile(form)\nuseEffect → localStorage\nresetTasteProfile()"]
-    TPA --- TPB["TasteProfileContext\n전역 상태 관리\n새로고침 후에도 유지"]
-```
 
 ## 🛣️ 라우팅 구조
 
