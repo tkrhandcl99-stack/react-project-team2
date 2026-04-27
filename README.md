@@ -76,6 +76,7 @@ npm install firebase lucide-react axios express cors
 
 # Python 서버
 pip install flask flask-cors selenium webdriver-manager requests
+(실행 안될 시 ..python_server에서) py -m pip install flask flask-cors selenium webdriver-manager requests
 ```
 
 ---
