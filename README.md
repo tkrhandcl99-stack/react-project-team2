@@ -224,9 +224,9 @@ const Friends   = lazy(() => import('./pages/Friends'));
 // ...
 ```
 before
-<img width="554" height="372" alt="image" src="https://github.com/user-attachments/assets/ac867c58-9472-488e-9ea3-c1d2cca3589b" />
+<img width="1442" height="535" alt="image" src="https://github.com/user-attachments/assets/e28e4988-c84f-405c-95bf-00c23fc287fe" />
 after
-<img width="579" height="248" alt="image" src="https://github.com/user-attachments/assets/47240108-9ab9-441a-8a2e-bd538e3e5c49" />
+<img width="1462" height="554" alt="image" src="https://github.com/user-attachments/assets/729183eb-a746-45fa-9e78-f48616135a51" />
 
 > 초기 번들 크기 **449KB → 184KB** (약 59% 감소)
 
